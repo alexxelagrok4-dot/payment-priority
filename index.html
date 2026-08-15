@@ -374,7 +374,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;
 let obligations = [];           // pay_obligations rows
 let paymentsByObligation = new Map(); // obligation_id -> [pay_payments rows]
 let currentTab = 'registry';
-let isApprover = false;         // CEO/CFO — определяется по наличию в pay_approvers
+let isApprover = false;         // CEO/CFO — из app_metadata.role сессии, см. applyRoleFromSession()
 
 /* ---------- derived ---------- */
 function paidAmount(ob){ return (paymentsByObligation.get(ob.id)||[]).reduce((s,p)=>s+Number(p.amount||0),0); }
@@ -416,10 +416,11 @@ function updateApprovalBadge(){
   const n = obligations.filter(ob=>ob.approval_status==='pending').length;
   document.getElementById('approvalPendingBadge').textContent = n ? ' ('+n+')' : '';
 }
-async function checkApprover(){
-  const { data:{ session } } = await sb.auth.getSession();
-  const { data } = await sb.from('pay_approvers').select('user_id').eq('user_id', session.user.id).maybeSingle();
-  isApprover = !!data;
+// Роль зашита в JWT-токене пользователя (app_metadata.role, ставится один раз SQL-командой
+// в auth.users — см. README, раздел «Роли») и приходит вместе с сессией при входе, без
+// отдельного запроса к базе: известна уже в момент авторизации, а не вычисляется постфактум.
+function applyRoleFromSession(session){
+  isApprover = !!(session.user.app_metadata && session.user.app_metadata.role === 'approver');
   document.getElementById('approvalTabBtn').style.display = isApprover ? '' : 'none';
 }
 
@@ -934,10 +935,10 @@ sb.auth.onAuthStateChange(async (event, session)=>{
   if(session){
     authScreen.style.display='none'; appRoot.style.display='block';
     document.getElementById('userEmail').textContent = emailToLogin(session.user.email);
+    applyRoleFromSession(session); // синхронно, роль уже в сессии — без похода в базу
     populateSelects();
     document.getElementById('queueDate').value = todayISO();
     document.getElementById('summaryDate').value = todayISO();
-    await checkApprover();
     await loadAll();
     applyDefaultTier(); // categoryPriority только что подгрузился из базы в loadAll() — обновим начальное значение
   } else {
