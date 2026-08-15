@@ -1,0 +1,580 @@
+<title>Обязательства-Платежи</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#F3F4F1; --surface:#FFFFFF; --surface-2:#ECEEEA; --surface-3:#E3E6E1;
+  --ink:#14181A; --ink-2:#4B534E; --ink-muted:#838A83;
+  --border:rgba(20,24,26,0.12); --border-strong:rgba(20,24,26,0.22);
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --good:#0ca30c; --warning:#c98500; --critical:#d03b3b;
+  --radius:10px; --radius-sm:6px;
+  --font-ui: system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono: ui-monospace,"Cascadia Mono","Consolas","SFMono-Regular",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#12161A; --surface:#1A2024; --surface-2:#202830; --surface-3:#242C34;
+    --ink:#ECEFEC; --ink-2:#A9B2AC; --ink-muted:#7C8680;
+    --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.22);
+    --accent:#3987e5; --accent-ink:#08131f;
+    --good:#3fbf3f; --warning:#d9a53c; --critical:#e66767;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#12161A; --surface:#1A2024; --surface-2:#202830; --surface-3:#242C34;
+  --ink:#ECEFEC; --ink-2:#A9B2AC; --ink-muted:#7C8680;
+  --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.22);
+  --accent:#3987e5; --accent-ink:#08131f;
+  --good:#3fbf3f; --warning:#d9a53c; --critical:#e66767;
+}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#F3F4F1; --surface:#FFFFFF; --surface-2:#ECEEEA; --surface-3:#E3E6E1;
+  --ink:#14181A; --ink-2:#4B534E; --ink-muted:#838A83;
+  --border:rgba(20,24,26,0.12); --border-strong:rgba(20,24,26,0.22);
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --good:#0ca30c; --warning:#c98500; --critical:#d03b3b;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+h1,h2{text-wrap:balance;margin:0;}
+.app{max-width:1200px;margin:0 auto;padding:28px 24px 80px;}
+header.top{margin-bottom:16px;}
+header.top h1{font-size:22px;font-weight:700;letter-spacing:-0.01em;}
+header.top p{margin:6px 0 0;color:var(--ink-2);font-size:13.5px;max-width:78ch;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+.card + .card{margin-top:16px;}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-2);font-weight:700;margin-bottom:14px;}
+.card h2 .hint{text-transform:none;letter-spacing:0;color:var(--ink-muted);font-weight:400;font-size:12px;margin-left:8px;}
+.field-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.field-row label{color:var(--ink-2);font-size:13px;}
+input[type=number],input[type=text],input[type=date],select{
+  font:inherit;font-family:var(--font-mono);font-size:13.5px;color:var(--ink);
+  background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+  padding:6px 9px;font-variant-numeric:tabular-nums;
+}
+input[type=text],select{font-family:var(--font-ui);}
+input[type=checkbox]{width:auto;}
+input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.btn{appearance:none;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--ink);font:inherit;font-weight:600;font-size:12.5px;padding:7px 13px;border-radius:var(--radius-sm);cursor:pointer;}
+.btn:hover{background:var(--surface-3);}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.btn.primary:hover{filter:brightness(1.06);}
+.btn.small{padding:4px 9px;font-size:11.5px;}
+.note{font-size:11.5px;color:var(--ink-muted);margin-top:6px;}
+.unit{color:var(--ink-muted);font-size:12.5px;}
+
+.auth-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100;padding:20px;}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 30px rgba(0,0,0,0.12);}
+.auth-card h1{font-size:19px;font-weight:700;}
+.auth-card p{color:var(--ink-2);font-size:12.5px;margin:0 0 4px;}
+.auth-card input{width:100%;}
+.auth-error{color:var(--critical);font-size:12px;min-height:16px;line-height:1.4;}
+.auth-note{color:var(--ink-muted);font-size:11.5px;min-height:14px;line-height:1.4;}
+.auth-actions{display:flex;gap:8px;margin-top:2px;}
+.auth-actions .btn{flex:1;}
+.userbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-2);margin-bottom:8px;}
+.userbar .email{font-family:var(--font-mono);}
+
+.tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.tab-btn{appearance:none;border:none;background:none;color:var(--ink-2);font:inherit;font-weight:600;font-size:13px;padding:9px 4px;margin-right:14px;cursor:pointer;border-bottom:2px solid transparent;}
+.tab-btn:hover{color:var(--ink);}
+.tab-btn.active{color:var(--ink);border-bottom-color:var(--accent);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+@media (max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;}
+.kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-muted);font-weight:600;margin-bottom:6px;}
+.kpi .value{font-family:var(--font-mono);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
+.kpi .sub{font-size:11px;color:var(--ink-muted);margin-top:4px;}
+
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap;}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+.badge.st-good{background:color-mix(in srgb, var(--good) 16%, transparent);color:var(--good);}
+.badge.st-warn{background:color-mix(in srgb, var(--warning) 20%, transparent);color:var(--warning);}
+.badge.st-critical{background:color-mix(in srgb, var(--critical) 16%, transparent);color:var(--critical);}
+.badge.st-none{background:var(--surface-3);color:var(--ink-2);}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
+table.dt{border-collapse:collapse;width:100%;font-size:13px;min-width:560px;}
+table.dt th,table.dt td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+table.dt thead th{background:var(--surface-2);color:var(--ink-2);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:0.04em;}
+table.dt tbody tr:last-child td{border-bottom:none;}
+table.dt tbody tr.total-row td{font-weight:700;background:var(--surface-2);}
+table.dt td.rowlabel,table.dt th.rowlabel{text-align:left;font-weight:600;color:var(--ink);}
+table.dt td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;}
+table.dt td.due-now{color:var(--critical);font-weight:600;}
+table.dt input[type=number]{width:80px;}
+.empty-row td{color:var(--ink-muted);font-style:italic;text-align:center;}
+</style>
+
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <h1>Обязательства-Платежи</h1>
+    <p>Вход для сотрудников. Логин/пароль общие с остальными внутренними инструментами компании.</p>
+    <input type="text" id="authEmail" placeholder="Логин (латиницей, без пробелов)" autocomplete="username">
+    <input type="password" id="authPassword" placeholder="Пароль" autocomplete="current-password">
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-note" id="authNote"></div>
+    <div class="auth-actions">
+      <button class="btn primary" id="signInBtn">Войти</button>
+      <button class="btn" id="signUpBtn">Зарегистрироваться</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="appRoot" style="display:none;">
+  <header class="top">
+    <div class="userbar"><span class="email" id="userEmail"></span><button class="btn" id="signOutBtn">Выйти</button></div>
+    <h1>Обязательства-Платежи</h1>
+    <p>Обязательства компании перед поставщиками, налоговой и клиентами (залоги) и приоритизация платежей — что нельзя не заплатить, и что регулярно утекает по мелочи.</p>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="registry">Реестр</button>
+    <button class="tab-btn" data-tab="queue">Очередь приоритизации</button>
+    <button class="tab-btn" data-tab="leaks">Утечки</button>
+    <button class="tab-btn" data-tab="dynamics">Динамика</button>
+  </div>
+
+  <!-- РЕЕСТР -->
+  <div class="tab-panel active" id="panel-registry">
+    <div class="card">
+      <h2>Новое обязательство</h2>
+      <div class="field-row">
+        <label>Контрагент</label><input type="text" id="newCounterparty" placeholder="ООО «Ромашка»" style="width:220px;">
+        <label>Категория</label><select id="newCategory"></select>
+        <label>Сумма</label><input type="number" id="newAmount" step="0.01" min="0" style="width:120px;"><span class="unit">₽</span>
+        <label>Срок</label><input type="date" id="newDueDate">
+        <label style="display:flex;align-items:center;gap:5px;"><input type="checkbox" id="newCritical">Критично</label>
+      </div>
+      <div class="field-row">
+        <label>Комментарий</label><input type="text" id="newNote" placeholder="необязательно" style="width:320px;">
+        <button class="btn primary" id="addObligationBtn">Добавить</button>
+        <span class="note" id="addStatus"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Реестр обязательств</h2>
+      <div class="field-row">
+        <label>Категория</label><select id="filterCategory"><option value="">Все</option></select>
+        <label>Критичность</label>
+        <select id="filterCritical">
+          <option value="">Все</option>
+          <option value="1">Только критичные</option>
+          <option value="0">Только некритичные</option>
+        </select>
+        <label>Статус</label>
+        <select id="filterStatus">
+          <option value="">Все</option>
+          <option value="open">Открыто</option>
+          <option value="partial">Частично оплачено</option>
+          <option value="paid">Оплачено</option>
+          <option value="cancelled">Отменено</option>
+        </select>
+        <label>Поиск</label><input type="text" id="filterSearch" placeholder="контрагент" style="width:160px;">
+      </div>
+      <div class="table-wrap"><table class="dt" id="registryTable"></table></div>
+    </div>
+  </div>
+
+  <!-- ОЧЕРЕДЬ -->
+  <div class="tab-panel" id="panel-queue">
+    <div class="card">
+      <h2>Очередь приоритизации <span class="hint">критичные — первыми, дальше по сроку</span></h2>
+      <div class="field-row"><label>Ближайший горизонт до даты</label><input type="date" id="queueDate"></div>
+    </div>
+    <div class="kpi-row" id="queueKpiRow"></div>
+    <div class="card">
+      <h2>Критично <span class="hint">без этого бизнес останавливается</span></h2>
+      <div class="table-wrap"><table class="dt" id="queueCriticalTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>Некритично, но в очереди <span class="hint">регулярные платежи, которые легко не заметить</span></h2>
+      <div class="table-wrap"><table class="dt" id="queueDeferrableTable"></table></div>
+    </div>
+  </div>
+
+  <!-- УТЕЧКИ -->
+  <div class="tab-panel" id="panel-leaks">
+    <div class="card">
+      <h2>Отчёт об утечках <span class="hint">некритичные платежи за период</span></h2>
+      <div class="field-row">
+        <label>С</label><input type="date" id="leakFrom">
+        <label>По</label><input type="date" id="leakTo">
+        <button class="btn primary" id="leakApplyBtn">Показать</button>
+      </div>
+    </div>
+    <div class="kpi-row" id="leakKpiRow"></div>
+    <div class="card">
+      <h2>По контрагентам</h2>
+      <div class="table-wrap"><table class="dt" id="leakByCounterpartyTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>По категориям</h2>
+      <div class="table-wrap"><table class="dt" id="leakByCategoryTable"></table></div>
+    </div>
+  </div>
+
+  <!-- ДИНАМИКА -->
+  <div class="tab-panel" id="panel-dynamics">
+    <div class="card">
+      <h2>Динамика обязательств по категориям <span class="hint">открытый остаток на конец периода</span></h2>
+      <div class="table-wrap"><table class="dt" id="dynamicsTable"></table></div>
+      <div class="note">Открытый остаток = сумма обязательств минус оплаты, зачтённые к этой дате. Рост — обязательства перед категорией растут, снижение — гасятся. Отменённые обязательства в расчёт не входят.</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+
+const SUPABASE_URL = "https://khzxfhxpcrjshsssghok.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_rrwlI1VXeWmQJ1Zn3YT3Ow_pUK04-ha";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const CATEGORIES = [
+  "Поставщики оборудования",
+  "Поставщики транспорта",
+  "Налоговая",
+  "Залоги клиентам",
+  "Аренда и инфраструктура",
+  "Зарплата и ФОТ",
+  "Кредиты и займы",
+  "Прочее"
+];
+
+const nf0 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+function fmtRub(v){ return isFinite(v) ? nf0.format(Math.round(v))+' ₽' : '—'; }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return isNaN(dt) ? '—' : dt.toLocaleDateString('ru-RU'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let obligations = [];           // pay_obligations rows
+let paymentsByObligation = new Map(); // obligation_id -> [pay_payments rows]
+let currentTab = 'registry';
+
+/* ---------- derived ---------- */
+function paidAmount(ob){ return (paymentsByObligation.get(ob.id)||[]).reduce((s,p)=>s+Number(p.amount||0),0); }
+function remaining(ob){ return Number(ob.amount||0) - paidAmount(ob); }
+function effectiveStatus(ob){
+  if(ob.status==='cancelled') return 'cancelled';
+  const paid = paidAmount(ob);
+  if(paid >= Number(ob.amount||0) - 0.005) return 'paid';
+  if(paid > 0) return 'partial';
+  return 'open';
+}
+function isOpenish(ob){ const s=effectiveStatus(ob); return s==='open'||s==='partial'; }
+function statusBadge(s){
+  if(s==='paid') return '<span class="badge st-good">Оплачено</span>';
+  if(s==='partial') return '<span class="badge st-warn">Частично</span>';
+  if(s==='cancelled') return '<span class="badge st-none">Отменено</span>';
+  return '<span class="badge st-none">Открыто</span>';
+}
+function criticalBadge(ob){ return ob.is_critical ? '<span class="badge st-critical">Критично</span>' : '<span class="badge st-none">Не критично</span>'; }
+
+/* ---------- load ---------- */
+async function loadAll(){
+  const { data: obData } = await sb.from('pay_obligations').select('*').order('due_date',{ascending:true, nullsFirst:false});
+  obligations = obData||[];
+  const { data: payData } = await sb.from('pay_payments').select('*').order('paid_at',{ascending:true});
+  paymentsByObligation = new Map();
+  (payData||[]).forEach(p=>{ if(!paymentsByObligation.has(p.obligation_id)) paymentsByObligation.set(p.obligation_id, []); paymentsByObligation.get(p.obligation_id).push(p); });
+  renderActiveTab();
+}
+
+/* ---------- tabs ---------- */
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab-btn'); if(!btn) return;
+  currentTab = btn.dataset.tab;
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b===btn));
+  document.querySelectorAll('.tab-panel').forEach(p=> p.classList.toggle('active', p.id==='panel-'+currentTab));
+  renderActiveTab();
+});
+function renderActiveTab(){
+  if(currentTab==='registry') renderRegistry();
+  else if(currentTab==='queue') renderQueue();
+  else if(currentTab==='leaks') renderLeaks();
+  else if(currentTab==='dynamics') renderDynamics();
+}
+
+/* ---------- add obligation ---------- */
+function populateCategorySelects(){
+  const opts = CATEGORIES.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  document.getElementById('newCategory').innerHTML = opts;
+  document.getElementById('filterCategory').innerHTML = '<option value="">Все</option>'+opts;
+}
+document.getElementById('addObligationBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('addStatus');
+  const counterparty = document.getElementById('newCounterparty').value.trim();
+  const category = document.getElementById('newCategory').value;
+  const amount = Number(document.getElementById('newAmount').value);
+  const due_date = document.getElementById('newDueDate').value || null;
+  const is_critical = document.getElementById('newCritical').checked;
+  const note = document.getElementById('newNote').value.trim() || null;
+  if(!counterparty){ statusEl.textContent='Укажите контрагента.'; return; }
+  if(!amount || amount<=0){ statusEl.textContent='Укажите сумму больше нуля.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  const { error } = await sb.from('pay_obligations').insert({
+    counterparty, category, amount, due_date, is_critical, note,
+    created_by: session.user.id, created_by_email: session.user.email
+  });
+  if(error){ statusEl.textContent='Ошибка: '+error.message; return; }
+  statusEl.textContent='Добавлено.';
+  document.getElementById('newCounterparty').value='';
+  document.getElementById('newAmount').value='';
+  document.getElementById('newDueDate').value='';
+  document.getElementById('newCritical').checked=false;
+  document.getElementById('newNote').value='';
+  await loadAll();
+});
+
+/* ---------- registry ---------- */
+function filteredObligations(){
+  const cat = document.getElementById('filterCategory').value;
+  const crit = document.getElementById('filterCritical').value;
+  const stat = document.getElementById('filterStatus').value;
+  const q = document.getElementById('filterSearch').value.trim().toLowerCase();
+  return obligations.filter(ob=>{
+    if(cat && ob.category!==cat) return false;
+    if(crit==='1' && !ob.is_critical) return false;
+    if(crit==='0' && ob.is_critical) return false;
+    if(stat && effectiveStatus(ob)!==stat) return false;
+    if(q && !ob.counterparty.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+['filterCategory','filterCritical','filterStatus','filterSearch'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', renderRegistry);
+  document.getElementById(id).addEventListener('change', renderRegistry);
+});
+function renderRegistry(){
+  const rows = filteredObligations();
+  const el = document.getElementById('registryTable');
+  let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Категория</th><th>Критичность</th><th>Сумма</th><th>Остаток</th><th>Срок</th><th>Статус</th><th>Действия</th></tr></thead><tbody>';
+  if(!rows.length) h += '<tr class="empty-row"><td colspan="8">Ничего не найдено.</td></tr>';
+  rows.forEach(ob=>{
+    const s = effectiveStatus(ob);
+    const rem = remaining(ob);
+    h += '<tr>'
+       + '<td class="rowlabel">'+esc(ob.counterparty)+(ob.note?'<div class="note">'+esc(ob.note)+'</div>':'')+'</td>'
+       + '<td>'+esc(ob.category)+'</td>'
+       + '<td>'+criticalBadge(ob)+'</td>'
+       + '<td class="num">'+fmtRub(ob.amount)+'</td>'
+       + '<td class="num">'+fmtRub(rem)+'</td>'
+       + '<td>'+fmtDate(ob.due_date)+'</td>'
+       + '<td>'+statusBadge(s)+'</td>'
+       + '<td>'+actionsCell(ob,s,rem)+'</td>'
+       + '</tr>';
+  });
+  h += '</tbody>';
+  el.innerHTML = h;
+}
+function actionsCell(ob,s,rem){
+  if(s==='cancelled') return '<button class="btn small reopenBtn" data-id="'+ob.id+'">Вернуть</button>';
+  if(s==='paid') return '<span class="note">—</span>';
+  return '<input type="number" class="payAmount" data-id="'+ob.id+'" step="0.01" min="0" value="'+Math.max(rem,0).toFixed(2)+'">'
+       + '<button class="btn small primary payBtn" data-id="'+ob.id+'">Оплатить</button>'
+       + '<button class="btn small cancelBtn" data-id="'+ob.id+'">Отменить</button>';
+}
+document.getElementById('registryTable').addEventListener('click', async e=>{
+  const { data:{ session } } = await sb.auth.getSession();
+  const payBtn = e.target.closest('.payBtn');
+  if(payBtn){
+    const id = payBtn.dataset.id;
+    const input = document.querySelector('.payAmount[data-id="'+id+'"]');
+    const amount = Number(input.value);
+    if(!amount || amount<=0) return;
+    await sb.from('pay_payments').insert({ obligation_id:id, amount, paid_at: todayISO(), paid_by: session.user.id, paid_by_email: session.user.email });
+    await loadAll();
+    return;
+  }
+  const cancelBtn = e.target.closest('.cancelBtn');
+  if(cancelBtn){
+    await sb.from('pay_obligations').update({status:'cancelled', updated_at: new Date().toISOString()}).eq('id', cancelBtn.dataset.id);
+    await loadAll();
+    return;
+  }
+  const reopenBtn = e.target.closest('.reopenBtn');
+  if(reopenBtn){
+    await sb.from('pay_obligations').update({status:'open', updated_at: new Date().toISOString()}).eq('id', reopenBtn.dataset.id);
+    await loadAll();
+    return;
+  }
+});
+
+/* ---------- queue ---------- */
+document.getElementById('queueDate').addEventListener('change', renderQueue);
+function renderQueue(){
+  const dateInput = document.getElementById('queueDate');
+  if(!dateInput.value) dateInput.value = todayISO();
+  const horizon = dateInput.value;
+  const open = obligations.filter(isOpenish);
+  const withinHorizon = ob => !ob.due_date || ob.due_date <= horizon;
+  const critical = open.filter(ob=>ob.is_critical).sort(sortByDue);
+  const deferrable = open.filter(ob=>!ob.is_critical).sort(sortByDue);
+
+  const sumRem = list => list.reduce((s,ob)=>s+remaining(ob),0);
+  const critAll = sumRem(critical), critHorizon = sumRem(critical.filter(withinHorizon));
+  const defAll = sumRem(deferrable), defHorizon = sumRem(deferrable.filter(withinHorizon));
+
+  document.getElementById('queueKpiRow').innerHTML =
+      kpi('Критично — всего открыто', fmtRub(critAll), 'из них к '+fmtDate(horizon)+': '+fmtRub(critHorizon))
+    + kpi('Некритично — всего открыто', fmtRub(defAll), 'из них к '+fmtDate(horizon)+': '+fmtRub(defHorizon))
+    + kpi('Нужно к '+fmtDate(horizon), fmtRub(critHorizon+defHorizon))
+    + kpi('Обязательств в очереди', String(open.length));
+
+  document.getElementById('queueCriticalTable').innerHTML = queueTable(critical, horizon);
+  document.getElementById('queueDeferrableTable').innerHTML = queueTable(deferrable, horizon);
+}
+function sortByDue(a,b){ if(!a.due_date) return 1; if(!b.due_date) return -1; return a.due_date < b.due_date ? -1 : a.due_date > b.due_date ? 1 : 0; }
+function queueTable(list, horizon){
+  let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Категория</th><th>Остаток</th><th>Срок</th></tr></thead><tbody>';
+  if(!list.length) h += '<tr class="empty-row"><td colspan="4">Пусто.</td></tr>';
+  list.forEach(ob=>{
+    const due = !ob.due_date || ob.due_date<=horizon;
+    h += '<tr><td class="rowlabel">'+esc(ob.counterparty)+'</td><td>'+esc(ob.category)+'</td>'
+       + '<td class="num">'+fmtRub(remaining(ob))+'</td>'
+       + '<td class="'+(due?'due-now':'')+'">'+fmtDate(ob.due_date)+'</td></tr>';
+  });
+  h += '</tbody>';
+  return h;
+}
+function kpi(label,value,sub){ return '<div class="kpi"><div class="label">'+label+'</div><div class="value">'+value+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'; }
+
+/* ---------- leaks ---------- */
+document.getElementById('leakApplyBtn').addEventListener('click', renderLeaks);
+function renderLeaks(){
+  const fromEl = document.getElementById('leakFrom'), toEl = document.getElementById('leakTo');
+  if(!toEl.value) toEl.value = todayISO();
+  if(!fromEl.value){ const d=new Date(); d.setDate(d.getDate()-30); fromEl.value = d.toISOString().slice(0,10); }
+  const from = fromEl.value, to = toEl.value;
+
+  const byCounterparty = new Map(); // counterparty -> {sum,count}
+  const byCategory = new Map();
+  let totalCount=0, totalSum=0;
+  obligations.forEach(ob=>{
+    if(ob.is_critical) return;
+    (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
+      if(p.paid_at < from || p.paid_at > to) return;
+      totalCount++; totalSum += Number(p.amount||0);
+      const cKey = ob.counterparty;
+      const catKey = ob.category;
+      if(!byCounterparty.has(cKey)) byCounterparty.set(cKey,{sum:0,count:0});
+      byCounterparty.get(cKey).sum += Number(p.amount||0); byCounterparty.get(cKey).count++;
+      if(!byCategory.has(catKey)) byCategory.set(catKey,{sum:0,count:0});
+      byCategory.get(catKey).sum += Number(p.amount||0); byCategory.get(catKey).count++;
+    });
+  });
+
+  document.getElementById('leakKpiRow').innerHTML =
+      kpi('Некритичных платежей', String(totalCount), fmtDate(from)+' — '+fmtDate(to))
+    + kpi('На сумму', fmtRub(totalSum))
+    + kpi('Контрагентов', String(byCounterparty.size))
+    + kpi('Средний платёж', totalCount ? fmtRub(totalSum/totalCount) : '—');
+
+  document.getElementById('leakByCounterpartyTable').innerHTML = leakTable(byCounterparty, 'Контрагент');
+  document.getElementById('leakByCategoryTable').innerHTML = leakTable(byCategory, 'Категория');
+}
+function leakTable(map, label){
+  const rows = Array.from(map.entries()).sort((a,b)=>b[1].sum-a[1].sum);
+  let h = '<thead><tr><th class="rowlabel">'+label+'</th><th>Платежей</th><th>Сумма</th></tr></thead><tbody>';
+  if(!rows.length) h += '<tr class="empty-row"><td colspan="3">Нет некритичных оплат за период.</td></tr>';
+  rows.forEach(([key,v])=>{ h += '<tr><td class="rowlabel">'+esc(key)+'</td><td class="num">'+v.count+'</td><td class="num">'+fmtRub(v.sum)+'</td></tr>'; });
+  h += '</tbody>';
+  return h;
+}
+
+/* ---------- dynamics ---------- */
+function monthEndsBack(n){
+  const out = [];
+  const now = new Date();
+  for(let i=n-1;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i+1, 0); // last day of that month
+    const iso = d.toISOString().slice(0,10);
+    const asOf = (i===0) ? todayISO() : iso; // current month uses "today" as cutoff
+    out.push({ label: d.toLocaleDateString('ru-RU',{month:'short',year:'2-digit'}), asOf });
+  }
+  return out;
+}
+function paymentsSumUpTo(obId, asOf){ return (paymentsByObligation.get(obId)||[]).filter(p=>p.paid_at<=asOf).reduce((s,p)=>s+Number(p.amount||0),0); }
+function balanceAt(category, asOf){
+  let sum = 0;
+  obligations.forEach(ob=>{
+    if(ob.category!==category) return;
+    if(ob.status==='cancelled') return;
+    if(ob.created_at.slice(0,10) > asOf) return;
+    sum += Number(ob.amount||0) - paymentsSumUpTo(ob.id, asOf);
+  });
+  return sum;
+}
+function renderDynamics(){
+  const months = monthEndsBack(6);
+  let h = '<thead><tr><th class="rowlabel">Категория</th>'+months.map(m=>'<th>'+m.label+'</th>').join('')+'</tr></thead><tbody>';
+  const totals = months.map(()=>0);
+  CATEGORIES.forEach(cat=>{
+    const values = months.map(m=>balanceAt(cat,m.asOf));
+    values.forEach((v,i)=>totals[i]+=v);
+    h += '<tr><td class="rowlabel">'+esc(cat)+'</td>'+values.map((v,i)=>'<td class="num">'+dynamicsCell(v, i>0?values[i-1]:null)+'</td>').join('')+'</tr>';
+  });
+  h += '<tr class="total-row"><td class="rowlabel">Итого</td>'+totals.map((v,i)=>'<td class="num">'+dynamicsCell(v, i>0?totals[i-1]:null)+'</td>').join('')+'</tr>';
+  h += '</tbody>';
+  document.getElementById('dynamicsTable').innerHTML = h;
+}
+function dynamicsCell(v, prev){
+  let arrow = '';
+  if(prev!=null && Math.abs(v-prev) > 0.5){
+    arrow = v>prev ? ' <span class="badge st-critical">▲</span>' : ' <span class="badge st-good">▼</span>';
+  }
+  return fmtRub(v)+arrow;
+}
+
+/* ---------- auth ---------- */
+const authScreen = document.getElementById('authScreen');
+const appRoot = document.getElementById('appRoot');
+const LOGIN_DOMAIN = '@opalubka.invalid';
+const LOGIN_PATTERN = /^[a-z0-9_.-]{3,}$/i;
+function loginToEmail(login){ return login.trim().toLowerCase().replace(/[^a-z0-9_.-]/g,'') + LOGIN_DOMAIN; }
+function emailToLogin(email){ return (email||'').split('@')[0]; }
+function validateLogin(login){ if(!login) return 'Введите логин.'; if(!LOGIN_PATTERN.test(login)) return 'Логин — латиница/цифры, от 3 символов.'; return null; }
+document.getElementById('signInBtn').addEventListener('click', async ()=>{
+  const authEmail=document.getElementById('authEmail'), authPassword=document.getElementById('authPassword');
+  const authError=document.getElementById('authError'), authNote=document.getElementById('authNote');
+  authError.textContent=''; authNote.textContent='';
+  const login = authEmail.value.trim(); const err=validateLogin(login); if(err){authError.textContent=err;return;}
+  const { error } = await sb.auth.signInWithPassword({ email: loginToEmail(login), password: authPassword.value });
+  if(error) authError.textContent = /invalid login/i.test(error.message) ? 'Неверный логин или пароль.' : error.message;
+});
+document.getElementById('signUpBtn').addEventListener('click', async ()=>{
+  const authEmail=document.getElementById('authEmail'), authPassword=document.getElementById('authPassword');
+  const authError=document.getElementById('authError'), authNote=document.getElementById('authNote');
+  authError.textContent=''; authNote.textContent='';
+  const login = authEmail.value.trim(); const err=validateLogin(login); if(err){authError.textContent=err;return;}
+  if(authPassword.value.length<6){ authError.textContent='Пароль от 6 символов.'; return; }
+  const { error } = await sb.auth.signUp({ email: loginToEmail(login), password: authPassword.value });
+  if(error) authError.textContent = /already registered/i.test(error.message) ? 'Логин занят.' : error.message;
+  else authNote.textContent = 'Готово — нажмите «Войти».';
+});
+document.getElementById('signOutBtn').addEventListener('click', ()=> sb.auth.signOut());
+
+sb.auth.onAuthStateChange(async (event, session)=>{
+  if(session){
+    authScreen.style.display='none'; appRoot.style.display='block';
+    document.getElementById('userEmail').textContent = emailToLogin(session.user.email);
+    populateCategorySelects();
+    document.getElementById('queueDate').value = todayISO();
+    await loadAll();
+  } else {
+    authScreen.style.display='flex'; appRoot.style.display='none';
+  }
+});
+})();
+</script>
