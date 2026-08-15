@@ -137,6 +137,7 @@ table.dt input[type=number]{width:80px;}
 
   <div class="tabs" id="tabs">
     <button class="tab-btn active" data-tab="registry">Реестр</button>
+    <button class="tab-btn" data-tab="overview">Структура обязательств</button>
     <button class="tab-btn" data-tab="queue">Очередь приоритизации</button>
     <button class="tab-btn" data-tab="summary">Итоги периода</button>
     <button class="tab-btn" data-tab="leaks">Утечки</button>
@@ -187,6 +188,43 @@ table.dt input[type=number]{width:80px;}
         <label>Поиск</label><input type="text" id="filterSearch" placeholder="контрагент" style="width:160px;">
       </div>
       <div class="table-wrap"><table class="dt" id="registryTable"></table></div>
+    </div>
+  </div>
+
+  <!-- СТРУКТУРА ОБЯЗАТЕЛЬСТВ -->
+  <div class="tab-panel" id="panel-overview">
+    <div class="card">
+      <h2>Сейчас <span class="hint">открытый остаток по всем действующим обязательствам</span></h2>
+    </div>
+    <div class="kpi-row" id="overviewKpiRow"></div>
+    <div class="card">
+      <h2>Структура по типу платежа</h2>
+      <div class="table-wrap"><table class="dt" id="overviewTierTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>Структура по статьям</h2>
+      <div class="table-wrap"><table class="dt" id="overviewCategoryTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>Топ контрагентов по открытому остатку</h2>
+      <div class="table-wrap"><table class="dt" id="overviewCounterpartyTable"></table></div>
+    </div>
+
+    <div class="card">
+      <h2>Сравнение периодов <span class="hint">выросли обязательства или сократились — на начало периода vs на конец</span></h2>
+      <div class="field-row">
+        <label>На начало</label><input type="date" id="compareFrom">
+        <label>На конец</label><input type="date" id="compareTo">
+      </div>
+    </div>
+    <div class="kpi-row" id="compareKpiRow"></div>
+    <div class="card">
+      <h2>По типу платежа</h2>
+      <div class="table-wrap"><table class="dt" id="compareTierTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>По статьям <span class="hint">крупнейшие изменения — сверху</span></h2>
+      <div class="table-wrap"><table class="dt" id="compareCategoryTable"></table></div>
     </div>
   </div>
 
@@ -268,6 +306,11 @@ table.dt input[type=number]{width:80px;}
   <div class="tab-panel" id="panel-approval">
     <div class="card">
       <h2>Ожидают согласования <span class="hint">видно и доступно только CEO/CFO</span></h2>
+      <div class="field-row">
+        <button class="btn" id="approvalSelectAllBtn">Выбрать все</button>
+        <button class="btn primary" id="approvalBulkApproveBtn">Согласовать выбранное</button>
+        <span class="note" id="approvalBulkStatus"></span>
+      </div>
       <div class="table-wrap"><table class="dt" id="approvalTable"></table></div>
     </div>
     <div class="card">
@@ -322,6 +365,7 @@ let categoryPriority = new Map(); // category -> tier, loaded from pay_category_
 function defaultTierForCategory(cat){ return categoryPriority.get(cat) || CATEGORY_DEFAULT_TIER[cat] || 'base'; }
 
 const nf0 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+const nf1 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:1});
 function fmtRub(v){ return isFinite(v) ? nf0.format(Math.round(v))+' ₽' : '—'; }
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return isNaN(dt) ? '—' : dt.toLocaleDateString('ru-RU'); }
@@ -389,6 +433,7 @@ document.getElementById('tabs').addEventListener('click', e=>{
 });
 function renderActiveTab(){
   if(currentTab==='registry') renderRegistry();
+  else if(currentTab==='overview') renderOverview();
   else if(currentTab==='queue') renderQueue();
   else if(currentTab==='summary') renderSummary();
   else if(currentTab==='leaks') renderLeaks();
@@ -670,6 +715,90 @@ document.getElementById('prioritiesTable').addEventListener('change', async e=>{
   categoryPriority.set(category, tier);
 });
 
+/* ---------- overview: structure + period comparison ---------- */
+function currentBalanceByCounterparty(){
+  const map = new Map();
+  obligations.forEach(ob=>{
+    if(ob.status==='cancelled') return;
+    const rem = remaining(ob);
+    if(rem <= 0.5) return; // погашено — не в открытом остатке
+    if(!map.has(ob.counterparty)) map.set(ob.counterparty, {sum:0,count:0});
+    map.get(ob.counterparty).sum += rem; map.get(ob.counterparty).count++;
+  });
+  return map;
+}
+function renderStructureTable(elId, rowLabelHeader, rows, total){
+  const sorted = rows.filter(r=>Math.abs(r.sum)>0.5).sort((a,b)=>b.sum-a.sum);
+  let h = '<thead><tr><th class="rowlabel">'+esc(rowLabelHeader)+'</th><th>Открытый остаток</th><th>% от всех обязательств</th></tr></thead><tbody>';
+  if(!sorted.length) h += '<tr class="empty-row"><td colspan="3">Открытых обязательств нет.</td></tr>';
+  sorted.forEach(r=>{
+    const pct = total ? (r.sum/total*100) : 0;
+    h += '<tr><td class="rowlabel">'+esc(r.label)+'</td><td class="num">'+fmtRub(r.sum)+'</td><td class="num">'+nf1.format(pct)+'%</td></tr>';
+  });
+  h += '</tbody>';
+  document.getElementById(elId).innerHTML = h;
+}
+function counterpartyStructureTable(elId, map, limit){
+  const rows = Array.from(map.entries()).sort((a,b)=>b[1].sum-a[1].sum).slice(0, limit||Infinity);
+  let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Обязательств</th><th>Открытый остаток</th></tr></thead><tbody>';
+  if(!rows.length) h += '<tr class="empty-row"><td colspan="3">Открытых обязательств нет.</td></tr>';
+  rows.forEach(([key,v])=>{ h += '<tr><td class="rowlabel">'+esc(key)+'</td><td class="num">'+v.count+'</td><td class="num">'+fmtRub(v.sum)+'</td></tr>'; });
+  h += '</tbody>';
+  document.getElementById(elId).innerHTML = h;
+}
+function compareTable(elId, rowLabelHeader, rows){ // rows: [{label, from, to}], уже отсортированы вызывающим кодом
+  let h = '<thead><tr><th class="rowlabel">'+esc(rowLabelHeader)+'</th><th>Было</th><th>Стало</th><th>Изменение</th></tr></thead><tbody>';
+  if(!rows.length) h += '<tr class="empty-row"><td colspan="4">Нет данных за период.</td></tr>';
+  rows.forEach(r=>{
+    const delta = r.to - r.from;
+    let cell;
+    if(Math.abs(delta) <= 0.5){
+      cell = '<span class="badge st-none">без изменений</span>';
+    } else {
+      const pctTxt = Math.abs(r.from) > 0.5 ? ' ('+(delta>0?'+':'')+nf1.format(delta/Math.abs(r.from)*100)+'%)' : '';
+      cell = delta>0
+        ? '<span class="badge st-critical">▲ '+fmtRub(delta)+pctTxt+'</span>'
+        : '<span class="badge st-good">▼ '+fmtRub(Math.abs(delta))+pctTxt+'</span>';
+    }
+    h += '<tr><td class="rowlabel">'+esc(r.label)+'</td><td class="num">'+fmtRub(r.from)+'</td><td class="num">'+fmtRub(r.to)+'</td><td class="num">'+cell+'</td></tr>';
+  });
+  h += '</tbody>';
+  document.getElementById(elId).innerHTML = h;
+}
+function renderOverview(){
+  const today = todayISO();
+  const totalNow = balanceAtMatch(()=>true, today);
+  document.getElementById('overviewKpiRow').innerHTML =
+      kpi('Всего открыто сейчас', fmtRub(totalNow))
+    + TIERS.map(t=> kpi(t.label, fmtRub(balanceAtMatch(ob=>ob.tier===t.key, today)))).join('');
+
+  renderStructureTable('overviewTierTable', 'Тип платежа', TIERS.map(t=>({ label:t.label, sum: balanceAtMatch(ob=>ob.tier===t.key, today) })), totalNow);
+  renderStructureTable('overviewCategoryTable', 'Статья', CATEGORIES.map(c=>({ label:c, sum: balanceAtMatch(ob=>ob.category===c, today) })), totalNow);
+  counterpartyStructureTable('overviewCounterpartyTable', currentBalanceByCounterparty(), 10);
+
+  const fromEl = document.getElementById('compareFrom'), toEl = document.getElementById('compareTo');
+  if(!toEl.value) toEl.value = today;
+  if(!fromEl.value){ const d=new Date(); d.setDate(1); fromEl.value = d.toISOString().slice(0,10); }
+  const from = fromEl.value, to = toEl.value;
+  const totalFrom = balanceAtMatch(()=>true, from), totalTo = balanceAtMatch(()=>true, to);
+  const deltaPctTxt = Math.abs(totalFrom) > 0.5 ? nf1.format((totalTo-totalFrom)/Math.abs(totalFrom)*100)+'%' : '—';
+
+  document.getElementById('compareKpiRow').innerHTML =
+      kpi('На '+fmtDate(from), fmtRub(totalFrom))
+    + kpi('На '+fmtDate(to), fmtRub(totalTo))
+    + kpi('Изменение', (totalTo-totalFrom>=0?'+':'')+fmtRub(totalTo-totalFrom))
+    + kpi('Изменение, %', deltaPctTxt);
+
+  const tierRows = TIERS.map(t=>({ label:t.label, from: balanceAtMatch(ob=>ob.tier===t.key, from), to: balanceAtMatch(ob=>ob.tier===t.key, to) }));
+  compareTable('compareTierTable', 'Тип платежа', tierRows);
+
+  const catRows = CATEGORIES.map(c=>({ label:c, from: balanceAtMatch(ob=>ob.category===c, from), to: balanceAtMatch(ob=>ob.category===c, to) }))
+    .sort((a,b)=> Math.abs((b.to-b.from)) - Math.abs((a.to-a.from)));
+  compareTable('compareCategoryTable', 'Статья', catRows);
+}
+document.getElementById('compareFrom').addEventListener('change', renderOverview);
+document.getElementById('compareTo').addEventListener('change', renderOverview);
+
 /* ---------- period summary ---------- */
 function periodBounds(type, refISO){
   const d = new Date(refISO+'T00:00:00');
@@ -716,10 +845,11 @@ function renderSummary(){
 /* ---------- approval (CEO/CFO) ---------- */
 function renderApproval(){
   const pending = obligations.filter(ob=>ob.approval_status==='pending' || !ob.approval_status).sort((a,b)=> a.created_at < b.created_at ? -1 : 1);
-  let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Статья</th><th>Тип</th><th>Сумма</th><th>Добавил</th><th>Когда</th><th>Действия</th></tr></thead><tbody>';
-  if(!pending.length) h += '<tr class="empty-row"><td colspan="7">Нет обязательств, ожидающих согласования.</td></tr>';
+  let h = '<thead><tr><th></th><th class="rowlabel">Контрагент</th><th>Статья</th><th>Тип</th><th>Сумма</th><th>Добавил</th><th>Когда</th><th>Действия</th></tr></thead><tbody>';
+  if(!pending.length) h += '<tr class="empty-row"><td colspan="8">Нет обязательств, ожидающих согласования.</td></tr>';
   pending.forEach(ob=>{
-    h += '<tr><td class="rowlabel">'+esc(ob.counterparty)+'</td><td>'+esc(ob.category)+'</td><td>'+tierBadge(ob)+'</td>'
+    h += '<tr><td><input type="checkbox" class="approveCheck" data-id="'+ob.id+'"></td>'
+       + '<td class="rowlabel">'+esc(ob.counterparty)+'</td><td>'+esc(ob.category)+'</td><td>'+tierBadge(ob)+'</td>'
        + '<td class="num">'+fmtRub(ob.amount)+'</td><td>'+esc(ob.created_by_email)+'</td><td>'+fmtDate(ob.created_at.slice(0,10))+'</td>'
        + '<td><input type="text" class="rejectNote" data-id="'+ob.id+'" placeholder="причина (для отклонения)" style="width:140px;">'
        + ' <button class="btn small primary approveBtn" data-id="'+ob.id+'">Согласовать</button>'
@@ -727,6 +857,7 @@ function renderApproval(){
   });
   h += '</tbody>';
   document.getElementById('approvalTable').innerHTML = h;
+  document.getElementById('approvalBulkStatus').textContent = '';
 
   const decided = obligations.filter(ob=>ob.approval_status==='approved' || ob.approval_status==='rejected')
     .sort((a,b)=> (b.approved_at||'') < (a.approved_at||'') ? -1 : 1).slice(0,30);
@@ -754,6 +885,20 @@ document.getElementById('approvalTable').addEventListener('click', async e=>{
     patch.approval_note = noteInput ? noteInput.value.trim() || null : null;
   }
   await sb.from('pay_obligations').update(patch).eq('id', id);
+  await loadAll();
+});
+document.getElementById('approvalSelectAllBtn').addEventListener('click', ()=>{
+  document.querySelectorAll('.approveCheck').forEach(cb=> cb.checked = true);
+});
+document.getElementById('approvalBulkApproveBtn').addEventListener('click', async ()=>{
+  const ids = Array.from(document.querySelectorAll('.approveCheck:checked')).map(cb=>cb.dataset.id);
+  const statusEl = document.getElementById('approvalBulkStatus');
+  if(!ids.length){ statusEl.textContent = 'Ничего не выбрано.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  const { error } = await sb.from('pay_obligations')
+    .update({ approval_status:'approved', approved_by: session.user.id, approved_by_email: session.user.email, approved_at: new Date().toISOString() })
+    .in('id', ids);
+  statusEl.textContent = error ? 'Ошибка: '+error.message : 'Согласовано: '+ids.length+'.';
   await loadAll();
 });
 
