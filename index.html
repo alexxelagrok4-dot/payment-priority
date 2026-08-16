@@ -234,7 +234,7 @@ table.dt input[type=number]{width:80px;}
       <div class="field-row"><label>Файл</label><input type="file" id="impOblFile" accept=".xlsx,.xls,.csv"><span class="note" id="impOblFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impOblPaste" style="min-height:70px;"></textarea></div>
-      <div class="field-row"><button class="btn" id="impOblParseBtn">Разобрать вставленное</button><span class="note" id="impOblParseStatus"></span></div>
+      <div class="field-row"><button class="btn" id="impOblParseBtn">Разобрать вставленное</button><button class="btn" id="impOblClearBtn">Очистить</button><span class="note" id="impOblParseStatus"></span></div>
       <div id="impOblMapping" style="display:none;">
         <div class="field-row" id="impOblMappingFields"></div>
         <div class="note">Статья необязательна — без неё строки получат «Не распределено», проставите в «Реестре» вручную (там статья редактируется прямо в таблице).</div>
@@ -250,7 +250,7 @@ table.dt input[type=number]{width:80px;}
       <div class="field-row"><label>Файл</label><input type="file" id="impBudFile" accept=".xlsx,.xls,.csv"><span class="note" id="impBudFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impBudPaste" style="min-height:70px;"></textarea></div>
-      <div class="field-row"><button class="btn" id="impBudParseBtn">Разобрать вставленное</button><span class="note" id="impBudParseStatus"></span></div>
+      <div class="field-row"><button class="btn" id="impBudParseBtn">Разобрать вставленное</button><button class="btn" id="impBudClearBtn">Очистить</button><span class="note" id="impBudParseStatus"></span></div>
       <div id="impBudMapping" style="display:none;">
         <div class="field-row" id="impBudMappingFields"></div>
         <div class="note">Несколько строк с одной статьёй сложатся в план по этой статье; исходные строки будут видны при клике на статью в «Бюджете». «Приоритет» учитывается только для новых статей.</div>
@@ -266,7 +266,7 @@ table.dt input[type=number]{width:80px;}
       <div class="field-row"><label>Файл</label><input type="file" id="impPayFile" accept=".xlsx,.xls,.csv"><span class="note" id="impPayFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impPayPaste" style="min-height:70px;"></textarea></div>
-      <div class="field-row"><button class="btn" id="impPayParseBtn">Разобрать вставленное</button><span class="note" id="impPayParseStatus"></span></div>
+      <div class="field-row"><button class="btn" id="impPayParseBtn">Разобрать вставленное</button><button class="btn" id="impPayClearBtn">Очистить</button><span class="note" id="impPayParseStatus"></span></div>
       <div id="impPayMapping" style="display:none;">
         <div class="field-row" id="impPayMappingFields"></div>
         <div class="note">Каждая строка станет обязательством, сразу закрытым этой оплатой — так исторические платежи попадают в «Итоги периода», «Утечки» и «Динамику».</div>
@@ -281,7 +281,7 @@ table.dt input[type=number]{width:80px;}
       <div class="field-row"><label>Файл</label><input type="file" id="impCashFile" accept=".xlsx,.xls,.csv"><span class="note" id="impCashFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impCashPaste" style="min-height:70px;"></textarea></div>
-      <div class="field-row"><button class="btn" id="impCashParseBtn">Разобрать вставленное</button><span class="note" id="impCashParseStatus"></span></div>
+      <div class="field-row"><button class="btn" id="impCashParseBtn">Разобрать вставленное</button><button class="btn" id="impCashClearBtn">Очистить</button><span class="note" id="impCashParseStatus"></span></div>
       <div id="impCashMapping" style="display:none;">
         <div class="field-row" id="impCashMappingFields"></div>
         <div class="note">Если на дату уже есть сохранённая кассовая позиция — значение обновится, а не задвоится.</div>
@@ -296,7 +296,7 @@ table.dt input[type=number]{width:80px;}
       <div class="field-row"><label>Файл</label><input type="file" id="impRecFile" accept=".xlsx,.xls,.csv"><span class="note" id="impRecFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impRecPaste" style="min-height:70px;"></textarea></div>
-      <div class="field-row"><button class="btn" id="impRecParseBtn">Разобрать вставленное</button><span class="note" id="impRecParseStatus"></span></div>
+      <div class="field-row"><button class="btn" id="impRecParseBtn">Разобрать вставленное</button><button class="btn" id="impRecClearBtn">Очистить</button><span class="note" id="impRecParseStatus"></span></div>
       <div id="impRecMapping" style="display:none;">
         <div class="field-row" id="impRecMappingFields"></div>
         <div class="note">Статья необязательна — без неё поступления получат «Не распределено». Каждая строка привязана к своей дате поступления.</div>
@@ -312,7 +312,7 @@ table.dt input[type=number]{width:80px;}
       <div class="field-row"><label>Файл</label><input type="file" id="impIncBudFile" accept=".xlsx,.xls,.csv"><span class="note" id="impIncBudFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impIncBudPaste" style="min-height:70px;"></textarea></div>
-      <div class="field-row"><button class="btn" id="impIncBudParseBtn">Разобрать вставленное</button><span class="note" id="impIncBudParseStatus"></span></div>
+      <div class="field-row"><button class="btn" id="impIncBudParseBtn">Разобрать вставленное</button><button class="btn" id="impIncBudClearBtn">Очистить</button><span class="note" id="impIncBudParseStatus"></span></div>
       <div id="impIncBudMapping" style="display:none;">
         <div class="field-row" id="impIncBudMappingFields"></div>
         <div class="note">Несколько строк с одной статьёй сложатся в план дохода по этой статье; исходные строки будут видны при клике на статью в «Бюджете».</div>
@@ -1125,7 +1125,10 @@ function resetImportType(typeKey){
   document.getElementById(p+'Paste').value = '';
   document.getElementById(p+'File').value = '';
   document.getElementById(p+'FileStatus').textContent = '';
+  document.getElementById(p+'ParseStatus').textContent = '';
   document.getElementById(p+'Mapping').style.display = 'none';
+  const extraArea = document.getElementById(p+'ExtraArea');
+  if(extraArea) extraArea.innerHTML = '';
   importData[typeKey] = { headers:[], rows:[], filename:null };
 }
 function importMappingValues(typeKey){
@@ -1162,6 +1165,11 @@ function renderImportPreview(typeKey){
 }
 function wireImportType(typeKey){
   const p = IMPORT_TYPES[typeKey].prefix;
+  document.getElementById(p+'ClearBtn').addEventListener('click', ()=>{
+    if(!confirm('Очистить эту форму загрузки? Выбранный файл, вставленный текст и сопоставление колонок будут удалены без возможности восстановить — если уже что-то импортировано, само импортированное это не затронет.')) return;
+    resetImportType(typeKey);
+    document.getElementById(p+'ConfirmStatus').textContent = '';
+  });
   document.getElementById(p+'ParseBtn').addEventListener('click', ()=>{
     const statusEl = document.getElementById(p+'ParseStatus');
     const raw = document.getElementById(p+'Paste').value;
