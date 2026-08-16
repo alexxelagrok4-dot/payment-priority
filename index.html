@@ -212,12 +212,17 @@ table.dt input[type=number]{width:80px;}
   <!-- ИМПОРТ -->
   <div class="tab-panel" id="panel-import">
     <div class="card">
-      <h2>Импорт обязательств <span class="hint">вставьте таблицу из Excel/1С — формат любой, колонки сопоставите на следующем шаге</span></h2>
+      <h2>Импорт обязательств <span class="hint">файл или вставка из буфера — формат любой, колонки сопоставите на следующем шаге</span></h2>
       <div class="field-row">
-        <textarea id="importPaste" placeholder="Скопируйте диапазон ячеек из Excel (Ctrl+C) и вставьте сюда (Ctrl+V). Первая строка — заголовки." style="min-height:110px;"></textarea>
+        <label>Файл</label><input type="file" id="importFile" accept=".xlsx,.xls,.csv">
+        <span class="note" id="importFileStatus"></span>
+      </div>
+      <div class="note">Загрузите файл выгрузки из 1С/Excel (.xlsx, .xls или .csv) целиком — таблица разберётся сама. Либо, если удобнее без файла, скопируйте диапазон ячеек в Excel (Ctrl+C) и вставьте сюда:</div>
+      <div class="field-row">
+        <textarea id="importPaste" placeholder="Вставьте сюда (Ctrl+V), если не загружаете файл. Первая строка — заголовки." style="min-height:90px;"></textarea>
       </div>
       <div class="field-row">
-        <button class="btn primary" id="importParseBtn">Разобрать</button>
+        <button class="btn primary" id="importParseBtn">Разобрать вставленное</button>
         <span class="note" id="importParseStatus"></span>
       </div>
     </div>
@@ -400,6 +405,7 @@ table.dt input[type=number]{width:80px;}
 </div>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
 "use strict";
@@ -751,6 +757,7 @@ document.getElementById('saveCashBtn').addEventListener('click', async ()=>{
 /* ---------- import ---------- */
 let importHeaders = [];
 let importRows = [];
+let lastImportFilename = null;
 function parseImportAmount(s){
   if(s==null) return NaN;
   let v = String(s).replace(/[^\d,.\-]/g,'');
@@ -766,6 +773,12 @@ function parseImportDate(s){
   if(m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
   return null;
 }
+function finishImportParse(statusEl, sourceLabel){
+  if(importRows.length < 1){ statusEl.textContent='Не нашлось ни одной строки с данными (нужна строка заголовков и хотя бы одна строка после неё).'; return; }
+  statusEl.textContent = sourceLabel+' — разобрано строк: '+importRows.length;
+  populateImportMapping();
+  document.getElementById('importMappingCard').style.display = '';
+}
 document.getElementById('importParseBtn').addEventListener('click', ()=>{
   const statusEl = document.getElementById('importParseStatus');
   const raw = document.getElementById('importPaste').value;
@@ -775,9 +788,27 @@ document.getElementById('importParseBtn').addEventListener('click', ()=>{
   const delim = lines[0].includes('\t') ? '\t' : ',';
   importHeaders = lines[0].split(delim).map(h=>h.trim());
   importRows = lines.slice(1).map(line=> line.split(delim).map(c=>c.trim()));
-  statusEl.textContent = 'Разобрано строк: '+importRows.length;
-  populateImportMapping();
-  document.getElementById('importMappingCard').style.display = '';
+  lastImportFilename = null;
+  finishImportParse(statusEl, 'Вставлено из буфера');
+});
+document.getElementById('importFile').addEventListener('change', async e=>{
+  const statusEl = document.getElementById('importFileStatus');
+  const file = e.target.files[0];
+  if(!file) return;
+  statusEl.textContent = 'Читаю файл…';
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type:'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const grid = XLSX.utils.sheet_to_json(sheet, { header:1, raw:false, defval:'', blankrows:false });
+    if(grid.length < 2){ statusEl.textContent='В файле нет данных (нужна строка заголовков и хотя бы одна строка после неё).'; return; }
+    importHeaders = grid[0].map(h=>String(h).trim());
+    importRows = grid.slice(1).map(row=> importHeaders.map((_,i)=> String(row[i]!=null?row[i]:'').trim()));
+    lastImportFilename = file.name;
+    finishImportParse(statusEl, 'Файл «'+file.name+'» ('+wb.SheetNames[0]+')');
+  } catch(err){
+    statusEl.textContent = 'Не удалось прочитать файл: '+err.message;
+  }
 });
 function populateImportMapping(){
   const opts = '<option value="">— не указано —</option>' + importHeaders.map((h,i)=>'<option value="'+i+'">'+esc(h)+'</option>').join('');
@@ -823,7 +854,7 @@ document.getElementById('importConfirmBtn').addEventListener('click', async ()=>
   }
 
   const { data: uploadRow, error: uploadErr } = await sb.from('pay_uploads')
-    .insert({ filename: null, period_label: todayISO(), uploaded_by: session.user.id, uploaded_by_email: session.user.email })
+    .insert({ filename: lastImportFilename, period_label: todayISO(), uploaded_by: session.user.id, uploaded_by_email: session.user.email })
     .select().single();
   if(uploadErr){ statusEl.textContent = 'Ошибка: '+uploadErr.message; return; }
 
@@ -846,8 +877,10 @@ document.getElementById('importConfirmBtn').addEventListener('click', async ()=>
   if(error){ statusEl.textContent = 'Ошибка: '+error.message; return; }
   statusEl.textContent = 'Импортировано: '+inserts.length+'.';
   document.getElementById('importPaste').value = '';
+  document.getElementById('importFile').value = '';
+  document.getElementById('importFileStatus').textContent = '';
   document.getElementById('importMappingCard').style.display = 'none';
-  importRows = []; importHeaders = [];
+  importRows = []; importHeaders = []; lastImportFilename = null;
   await loadAll();
 });
 
