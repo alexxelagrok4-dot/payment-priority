@@ -258,6 +258,12 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impOblPaste" style="min-height:70px;"></textarea></div>
       <div class="field-row"><button class="btn" id="impOblParseBtn">Разобрать вставленное</button><button class="btn" id="impOblClearBtn">Очистить</button><span class="note" id="impOblParseStatus"></span></div>
+      <div class="field-row">
+        <label>Строка заголовков</label><input type="number" class="impHeaderRowInput" id="impOblHeaderRow" min="1" value="1" style="width:60px;">
+        <label>Первая строка данных</label><input type="number" class="impDataRowInput" id="impOblDataRow" min="1" value="2" style="width:60px;">
+        <button class="btn small" id="impOblApplyRowsBtn">Обновить</button>
+        <span class="note">меняйте, если в файле заголовки/данные начинаются не с первой строки</span>
+      </div>
       <div id="impOblMapping" style="display:none;">
         <div class="field-row" id="impOblMappingFields"></div>
         <div class="note">Статья необязательна — без неё строки получат «Не распределено», проставите в «Реестре» вручную (там статья редактируется прямо в таблице).</div>
@@ -274,6 +280,12 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impBudPaste" style="min-height:70px;"></textarea></div>
       <div class="field-row"><button class="btn" id="impBudParseBtn">Разобрать вставленное</button><button class="btn" id="impBudClearBtn">Очистить</button><span class="note" id="impBudParseStatus"></span></div>
+      <div class="field-row">
+        <label>Строка заголовков</label><input type="number" class="impHeaderRowInput" id="impBudHeaderRow" min="1" value="1" style="width:60px;">
+        <label>Первая строка данных</label><input type="number" class="impDataRowInput" id="impBudDataRow" min="1" value="2" style="width:60px;">
+        <button class="btn small" id="impBudApplyRowsBtn">Обновить</button>
+        <span class="note">меняйте, если в файле заголовки/данные начинаются не с первой строки</span>
+      </div>
       <div id="impBudMapping" style="display:none;">
         <div class="field-row" id="impBudMappingFields"></div>
         <div class="note">Несколько строк с одной статьёй сложатся в план по этой статье; исходные строки будут видны при клике на статью в «Бюджете». «Приоритет» учитывается только для новых статей.</div>
@@ -290,6 +302,12 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impPayPaste" style="min-height:70px;"></textarea></div>
       <div class="field-row"><button class="btn" id="impPayParseBtn">Разобрать вставленное</button><button class="btn" id="impPayClearBtn">Очистить</button><span class="note" id="impPayParseStatus"></span></div>
+      <div class="field-row">
+        <label>Строка заголовков</label><input type="number" class="impHeaderRowInput" id="impPayHeaderRow" min="1" value="1" style="width:60px;">
+        <label>Первая строка данных</label><input type="number" class="impDataRowInput" id="impPayDataRow" min="1" value="2" style="width:60px;">
+        <button class="btn small" id="impPayApplyRowsBtn">Обновить</button>
+        <span class="note">меняйте, если в файле заголовки/данные начинаются не с первой строки</span>
+      </div>
       <div id="impPayMapping" style="display:none;">
         <div class="field-row" id="impPayMappingFields"></div>
         <div class="note">Каждая строка станет обязательством, сразу закрытым этой оплатой — так исторические платежи попадают в «Итоги периода», «Утечки» и «Динамику».</div>
@@ -305,6 +323,12 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impCashPaste" style="min-height:70px;"></textarea></div>
       <div class="field-row"><button class="btn" id="impCashParseBtn">Разобрать вставленное</button><button class="btn" id="impCashClearBtn">Очистить</button><span class="note" id="impCashParseStatus"></span></div>
+      <div class="field-row">
+        <label>Строка заголовков</label><input type="number" class="impHeaderRowInput" id="impCashHeaderRow" min="1" value="1" style="width:60px;">
+        <label>Первая строка данных</label><input type="number" class="impDataRowInput" id="impCashDataRow" min="1" value="2" style="width:60px;">
+        <button class="btn small" id="impCashApplyRowsBtn">Обновить</button>
+        <span class="note">меняйте, если в файле заголовки/данные начинаются не с первой строки</span>
+      </div>
       <div id="impCashMapping" style="display:none;">
         <div class="field-row" id="impCashMappingFields"></div>
         <div class="note">Если на дату уже есть сохранённая кассовая позиция — значение обновится, а не задвоится.</div>
@@ -320,6 +344,12 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impRecPaste" style="min-height:70px;"></textarea></div>
       <div class="field-row"><button class="btn" id="impRecParseBtn">Разобрать вставленное</button><button class="btn" id="impRecClearBtn">Очистить</button><span class="note" id="impRecParseStatus"></span></div>
+      <div class="field-row">
+        <label>Строка заголовков</label><input type="number" class="impHeaderRowInput" id="impRecHeaderRow" min="1" value="1" style="width:60px;">
+        <label>Первая строка данных</label><input type="number" class="impDataRowInput" id="impRecDataRow" min="1" value="2" style="width:60px;">
+        <button class="btn small" id="impRecApplyRowsBtn">Обновить</button>
+        <span class="note">меняйте, если в файле заголовки/данные начинаются не с первой строки</span>
+      </div>
       <div id="impRecMapping" style="display:none;">
         <div class="field-row" id="impRecMappingFields"></div>
         <div class="note">Статья необязательна — без неё поступления получат «Не распределено». Каждая строка привязана к своей дате поступления.</div>
@@ -336,6 +366,12 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
       <div class="field-row"><textarea id="impIncBudPaste" style="min-height:70px;"></textarea></div>
       <div class="field-row"><button class="btn" id="impIncBudParseBtn">Разобрать вставленное</button><button class="btn" id="impIncBudClearBtn">Очистить</button><span class="note" id="impIncBudParseStatus"></span></div>
+      <div class="field-row">
+        <label>Строка заголовков</label><input type="number" class="impHeaderRowInput" id="impIncBudHeaderRow" min="1" value="1" style="width:60px;">
+        <label>Первая строка данных</label><input type="number" class="impDataRowInput" id="impIncBudDataRow" min="1" value="2" style="width:60px;">
+        <button class="btn small" id="impIncBudApplyRowsBtn">Обновить</button>
+        <span class="note">меняйте, если в файле заголовки/данные начинаются не с первой строки</span>
+      </div>
       <div id="impIncBudMapping" style="display:none;">
         <div class="field-row" id="impIncBudMappingFields"></div>
         <div class="note">Несколько строк с одной статьёй сложатся в план дохода по этой статье; исходные строки будут видны при клике на статью в «Бюджете».</div>
@@ -1086,8 +1122,10 @@ document.getElementById('saveCashBtn').addEventListener('click', async ()=>{
 function parseImportAmount(s){
   if(s==null) return NaN;
   let v = String(s).replace(/[^\d,.\-]/g,'');
-  if(v.includes(',') && v.includes('.')) v = v.replace(/,/g,'');
-  else if(v.includes(',')) v = v.replace(',', '.');
+  const commaCount = (v.match(/,/g)||[]).length;
+  if(v.includes(',') && v.includes('.')) v = v.replace(/,/g,''); // "1,234.56" — запятая тысячи, точка дробная
+  else if(commaCount > 1) v = v.replace(/,/g,''); // "8,576,640" — несколько запятых, только тысячи, дробной части нет
+  else if(commaCount === 1) v = v.replace(',', '.'); // "1234,56" — одна запятая, дробная (рос. формат)
   return Number(v);
 }
 function parseImportDate(s){
@@ -1119,7 +1157,7 @@ const IMPORT_TYPES = {
     prefix: 'impBud',
     fields: [
       {key:'category', label:'Статья', required:true, guess:['статья','категория']},
-      {key:'amount', label:'Сумма', required:true, guess:['сумма','план','итого']},
+      {key:'amount', label:'Сумма', required:true, guess:['сумма','план','итого','прогноз']},
       {key:'label', label:'Описание/подпункт', required:false, guess:['описание','подпункт','позиция']},
       {key:'tier', label:'Приоритет', required:false, guess:['приоритет','тип']}
     ],
@@ -1158,29 +1196,48 @@ const IMPORT_TYPES = {
     prefix: 'impIncBud',
     fields: [
       {key:'category', label:'Статья', required:true, guess:['статья','категория']},
-      {key:'amount', label:'Сумма', required:true, guess:['сумма','план','итого']},
+      {key:'amount', label:'Сумма', required:true, guess:['сумма','план','итого','прогноз']},
       {key:'label', label:'Описание/подпункт', required:false, guess:['описание','подпункт','позиция']}
     ],
     mappingNote: 'Несколько строк с одной статьёй сложатся в план дохода по этой статье; исходные строки будут видны при клике на статью в «Бюджете».'
   }
 };
 const importData = {};
-Object.keys(IMPORT_TYPES).forEach(k=> importData[k] = { headers:[], rows:[], filename:null });
+Object.keys(IMPORT_TYPES).forEach(k=> importData[k] = { headers:[], rows:[], filename:null, fullGrid:null, excludedRows: new Set() });
 
 function importGridFromText(text){
   const lines = text.split(/\r?\n/).filter(l=>l.trim().length);
   if(lines.length < 2) return null;
   const delim = lines[0].includes('\t') ? '\t' : ',';
-  return { headers: lines[0].split(delim).map(h=>h.trim()), rows: lines.slice(1).map(line=> line.split(delim).map(c=>c.trim())) };
+  return { fullGrid: lines.map(line=> line.split(delim).map(c=>c.trim())) };
 }
 async function importGridFromFile(file){
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, { type:'array' });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const grid = XLSX.utils.sheet_to_json(sheet, { header:1, raw:false, defval:'', blankrows:false });
-  if(grid.length < 2) return null;
-  const headers = grid[0].map(h=>String(h).trim());
-  return { headers, rows: grid.slice(1).map(row=> headers.map((_,i)=> String(row[i]!=null?row[i]:'').trim())), sheetName: wb.SheetNames[0] };
+  const sheetName = wb.SheetNames[0];
+  const sheet = wb.Sheets[sheetName];
+  const fullGrid = XLSX.utils.sheet_to_json(sheet, { header:1, raw:false, defval:'', blankrows:false });
+  if(fullGrid.length < 2) return null;
+  return { fullGrid, sheetName };
+}
+// headerRow/dataStartRow — 1-based, как считает пользователь глядя в файл (нумерация не
+// учитывает полностью пустые строки, они уже отброшены sheet_to_json с blankrows:false).
+// По умолчанию 1/2 — точное прежнее поведение (заголовок — первая строка, данные — остальное).
+function sliceImportGrid(fullGrid, headerRow, dataStartRow){
+  const hIdx = Math.max(0, (headerRow||1)-1), dIdx = Math.max(hIdx+1, (dataStartRow||2)-1);
+  const headerSrc = fullGrid[hIdx] || [];
+  const headers = headerSrc.map(h=>String(h).trim());
+  const rows = fullGrid.slice(dIdx).map(row=> headers.map((_,i)=> String(row[i]!=null?row[i]:'').trim()));
+  return { headers, rows };
+}
+function applyImportRowOffsets(typeKey){
+  const p = IMPORT_TYPES[typeKey].prefix, d = importData[typeKey];
+  if(!d.fullGrid) return;
+  const headerRow = Number(document.getElementById(p+'HeaderRow').value)||1;
+  const dataStartRow = Number(document.getElementById(p+'DataRow').value)||2;
+  const { headers, rows } = sliceImportGrid(d.fullGrid, headerRow, dataStartRow);
+  d.headers = headers; d.rows = rows; d.excludedRows = new Set();
+  renderImportMapping(typeKey);
 }
 function resetImportType(typeKey){
   const p = IMPORT_TYPES[typeKey].prefix;
@@ -1189,9 +1246,16 @@ function resetImportType(typeKey){
   document.getElementById(p+'FileStatus').textContent = '';
   document.getElementById(p+'ParseStatus').textContent = '';
   document.getElementById(p+'Mapping').style.display = 'none';
+  document.getElementById(p+'HeaderRow').value = 1;
+  document.getElementById(p+'DataRow').value = 2;
   const extraArea = document.getElementById(p+'ExtraArea');
   if(extraArea) extraArea.innerHTML = '';
-  importData[typeKey] = { headers:[], rows:[], filename:null };
+  importData[typeKey] = { headers:[], rows:[], filename:null, fullGrid:null, excludedRows: new Set() };
+}
+function includedImportRows(typeKey){
+  const d = importData[typeKey];
+  const excluded = d.excludedRows || new Set();
+  return d.rows.filter((_,i)=>!excluded.has(i));
 }
 function importMappingValues(typeKey){
   const values = {};
@@ -1213,15 +1277,24 @@ function renderImportMapping(typeKey){
   document.getElementById(p+'Mapping').style.display = '';
   renderImportPreview(typeKey);
 }
+const IMPORT_PREVIEW_LIMIT = 500;
 function renderImportPreview(typeKey){
   const cfg = IMPORT_TYPES[typeKey], p = cfg.prefix, data = importData[typeKey], values = importMappingValues(typeKey);
-  let h = '<thead><tr>'+cfg.fields.map(f=>'<th>'+esc(f.label)+'</th>').join('')+'</tr></thead><tbody>';
-  data.rows.slice(0,20).forEach(row=>{
-    h += '<tr>'+cfg.fields.map(f=>{ const idx = values[f.key]; return '<td>'+esc(idx!==''&&idx!=null ? row[idx] : '')+'</td>'; }).join('')+'</tr>';
+  const excluded = data.excludedRows || new Set();
+  const shown = data.rows.slice(0, IMPORT_PREVIEW_LIMIT);
+  const allChecked = shown.every((_,i)=>!excluded.has(i));
+  let h = '<thead><tr><th><input type="checkbox" class="'+p+'SelectAll"'+(allChecked?' checked':'')+'></th>'
+    + cfg.fields.map(f=>'<th>'+esc(f.label)+'</th>').join('')+'</tr></thead><tbody>';
+  shown.forEach((row,i)=>{
+    h += '<tr><td><input type="checkbox" class="'+p+'RowInclude" data-idx="'+i+'"'+(excluded.has(i)?'':' checked')+'></td>'
+       + cfg.fields.map(f=>{ const idx = values[f.key]; return '<td>'+esc(idx!==''&&idx!=null ? row[idx] : '')+'</td>'; }).join('')+'</tr>';
   });
   h += '</tbody>';
   document.getElementById(p+'Preview').innerHTML = h;
-  document.getElementById(p+'ConfirmStatus').textContent = 'Строк: '+data.rows.length+(data.rows.length>20?' (показаны первые 20)':'');
+  const includedCount = data.rows.length - excluded.size;
+  document.getElementById(p+'ConfirmStatus').textContent = 'Строк: '+data.rows.length+', будет импортировано: '+includedCount
+    +(data.rows.length>IMPORT_PREVIEW_LIMIT?' (в превью показаны первые '+IMPORT_PREVIEW_LIMIT+')':'')
+    +'. Снимите галочку у строки, чтобы исключить её (например, итоговые/групповые строки).';
   if(typeKey==='bud') renderBudgetImportCategoryMapping();
   if(typeKey==='incBud') renderIncomeBudgetImportCategoryMapping();
 }
@@ -1238,9 +1311,9 @@ function wireImportType(typeKey){
     if(!raw.trim()){ statusEl.textContent='Вставьте данные.'; return; }
     const grid = importGridFromText(raw);
     if(!grid){ statusEl.textContent='Нужна хотя бы строка заголовков и одна строка данных.'; return; }
-    importData[typeKey] = { headers:grid.headers, rows:grid.rows, filename:null };
-    statusEl.textContent = 'Вставлено из буфера — строк: '+grid.rows.length;
-    renderImportMapping(typeKey);
+    importData[typeKey].fullGrid = grid.fullGrid; importData[typeKey].filename = null;
+    applyImportRowOffsets(typeKey);
+    statusEl.textContent = 'Вставлено из буфера — строк: '+grid.fullGrid.length;
   });
   document.getElementById(p+'File').addEventListener('change', async e=>{
     const statusEl = document.getElementById(p+'FileStatus');
@@ -1250,10 +1323,29 @@ function wireImportType(typeKey){
     try{
       const grid = await importGridFromFile(file);
       if(!grid){ statusEl.textContent='В файле нет данных.'; return; }
-      importData[typeKey] = { headers:grid.headers, rows:grid.rows, filename:file.name };
-      statusEl.textContent = 'Файл «'+file.name+'» ('+grid.sheetName+') — строк: '+grid.rows.length;
-      renderImportMapping(typeKey);
+      importData[typeKey].fullGrid = grid.fullGrid; importData[typeKey].filename = file.name;
+      applyImportRowOffsets(typeKey);
+      statusEl.textContent = 'Файл «'+file.name+'» ('+grid.sheetName+') — строк: '+grid.fullGrid.length;
     } catch(err){ statusEl.textContent = 'Не удалось прочитать файл: '+err.message; }
+  });
+  document.getElementById(p+'HeaderRow').addEventListener('change', ()=> applyImportRowOffsets(typeKey));
+  document.getElementById(p+'DataRow').addEventListener('change', ()=> applyImportRowOffsets(typeKey));
+  document.getElementById(p+'ApplyRowsBtn').addEventListener('click', ()=> applyImportRowOffsets(typeKey));
+  document.getElementById(p+'Preview').addEventListener('change', e=>{
+    const selectAll = e.target.closest('.'+p+'SelectAll');
+    const rowBox = e.target.closest('.'+p+'RowInclude');
+    if(!selectAll && !rowBox) return;
+    const data = importData[typeKey];
+    if(!data.excludedRows) data.excludedRows = new Set();
+    if(selectAll){
+      const shown = data.rows.slice(0, IMPORT_PREVIEW_LIMIT);
+      if(selectAll.checked) shown.forEach((_,i)=> data.excludedRows.delete(i));
+      else shown.forEach((_,i)=> data.excludedRows.add(i));
+    } else {
+      const idx = Number(rowBox.dataset.idx);
+      if(rowBox.checked) data.excludedRows.delete(idx); else data.excludedRows.add(idx);
+    }
+    renderImportPreview(typeKey);
   });
 }
 Object.keys(IMPORT_TYPES).forEach(wireImportType);
@@ -1271,7 +1363,7 @@ document.getElementById('impOblConfirmBtn').addEventListener('click', async ()=>
     .insert({ filename: importData.obl.filename, period_label: todayISO(), uploaded_by: session.user.id, uploaded_by_email: session.user.email })
     .select().single();
   if(uploadErr){ statusEl.textContent = 'Ошибка: '+uploadErr.message; return; }
-  const rows = importData.obl.rows.map(row=>{
+  const rows = includedImportRows('obl').map(row=>{
     const counterparty = (values.counterparty!==''?row[values.counterparty]:'').trim();
     const amount = parseImportAmount(values.amount!==''?row[values.amount]:'');
     const due_date = values.due_date!=='' ? parseImportDate(row[values.due_date]) : null;
@@ -1298,7 +1390,7 @@ document.getElementById('impPayConfirmBtn').addEventListener('click', async ()=>
   if(!categoryList.includes('Не распределено')){
     await sb.from('pay_category_priorities').insert({ category:'Не распределено', tier:'operational', updated_by: session.user.id, updated_by_email: session.user.email });
   }
-  const rows = importData.pay.rows.map(row=>{
+  const rows = includedImportRows('pay').map(row=>{
     const counterparty = row[values.counterparty].trim();
     const amount = parseImportAmount(row[values.amount]);
     const paid_at = parseImportDate(row[values.paid_at]);
@@ -1323,7 +1415,7 @@ document.getElementById('impCashConfirmBtn').addEventListener('click', async ()=
   const values = importMappingValues('cash');
   if(values.position_date===''||values.opening_balance===''){ statusEl.textContent='Сопоставьте Дату и Остаток на начало дня.'; return; }
   const { data:{ session } } = await sb.auth.getSession();
-  const rows = importData.cash.rows.map(row=>{
+  const rows = includedImportRows('cash').map(row=>{
     const position_date = parseImportDate(row[values.position_date]);
     const opening_balance = parseImportAmount(row[values.opening_balance]);
     const prior_day_inflow = values.prior_day_inflow!=='' ? parseImportAmount(row[values.prior_day_inflow]) : 0;
@@ -1358,7 +1450,7 @@ function renderBudgetImportCategoryMapping(){
   const values = importMappingValues('bud');
   const area = document.getElementById('impBudExtraArea');
   if(values.category===''){ area.innerHTML=''; return; }
-  const names = Array.from(new Set(importData.bud.rows.map(row=> (row[values.category]||'').trim()).filter(Boolean)));
+  const names = Array.from(new Set(includedImportRows('bud').map(row=> (row[values.category]||'').trim()).filter(Boolean)));
   const unmatched = names.filter(n=> !categoryList.includes(n));
   if(!unmatched.length){ area.innerHTML = ''; return; }
   let h = '<div class="note">В файле есть статьи, которых нет в справочнике — для каждой укажите, создать новую или переименовать существующую в это название (переименование применится везде — в обязательствах, бюджете и справочнике):</div>';
@@ -1382,9 +1474,9 @@ document.getElementById('impBudConfirmBtn').addEventListener('click', async ()=>
   await loadAll();
 
   const groups = new Map();
-  importData.bud.rows.forEach(row=>{
+  includedImportRows('bud').forEach(row=>{
     const category = (row[values.category]||'').trim();
-    const amount = parseImportAmount(row[values.amount]);
+    const amount = Math.abs(parseImportAmount(row[values.amount]));
     if(!category || !isFinite(amount)) return;
     const label = values.label!=='' ? (row[values.label]||'').trim() : '';
     const tier = values.tier!=='' ? parseImportTier(row[values.tier]) : null;
@@ -1431,7 +1523,7 @@ document.getElementById('impRecConfirmBtn').addEventListener('click', async ()=>
   if(!incomeCategoryList.includes('Не распределено')){
     await sb.from('pay_income_categories').insert({ category:'Не распределено', created_by: session.user.id, created_by_email: session.user.email });
   }
-  const rows = importData.rec.rows.map(row=>{
+  const rows = includedImportRows('rec').map(row=>{
     const received_at = parseImportDate(row[values.received_at]);
     const amount = parseImportAmount(row[values.amount]);
     const category = (values.category!=='' && row[values.category] && row[values.category].trim()) ? row[values.category].trim() : 'Не распределено';
@@ -1451,7 +1543,7 @@ function renderIncomeBudgetImportCategoryMapping(){
   const values = importMappingValues('incBud');
   const area = document.getElementById('impIncBudExtraArea');
   if(values.category===''){ area.innerHTML=''; return; }
-  const names = Array.from(new Set(importData.incBud.rows.map(row=> (row[values.category]||'').trim()).filter(Boolean)));
+  const names = Array.from(new Set(includedImportRows('incBud').map(row=> (row[values.category]||'').trim()).filter(Boolean)));
   const unmatched = names.filter(n=> !incomeCategoryList.includes(n));
   if(!unmatched.length){ area.innerHTML = ''; return; }
   let h = '<div class="note">В файле есть статьи дохода, которых нет в справочнике — для каждой укажите, создать новую или переименовать существующую в это название:</div>';
@@ -1475,9 +1567,9 @@ document.getElementById('impIncBudConfirmBtn').addEventListener('click', async (
   await loadAll();
 
   const groups = new Map();
-  importData.incBud.rows.forEach(row=>{
+  includedImportRows('incBud').forEach(row=>{
     const category = (row[values.category]||'').trim();
-    const amount = parseImportAmount(row[values.amount]);
+    const amount = Math.abs(parseImportAmount(row[values.amount]));
     if(!category || !isFinite(amount)) return;
     const label = values.label!=='' ? (row[values.label]||'').trim() : '';
     if(!groups.has(category)) groups.set(category, { sum:0, items:[] });
