@@ -1,40 +1,43 @@
-<title>Обязательства-Платежи</title>
+<title>Дайя-Финансы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme: light;
-  --bg:#F3F4F1; --surface:#FFFFFF; --surface-2:#ECEEEA; --surface-3:#E3E6E1;
-  --ink:#14181A; --ink-2:#4B534E; --ink-muted:#838A83;
-  --border:rgba(20,24,26,0.12); --border-strong:rgba(20,24,26,0.22);
-  --accent:#2a78d6; --accent-ink:#ffffff;
+  --bg:#F7F6F5; --surface:#FFFFFF; --surface-2:#F0EFED; --surface-3:#E8E6E3;
+  --ink:#32373C; --ink-2:#69727D; --ink-muted:#9099A1;
+  --border:rgba(50,55,60,0.14); --border-strong:rgba(50,55,60,0.26);
+  --accent:#DC5126; --accent-ink:#ffffff;
   --good:#0ca30c; --warning:#c98500; --critical:#d03b3b;
   --radius:10px; --radius-sm:6px;
-  --font-ui: system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-ui: 'Roboto', system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono: ui-monospace,"Cascadia Mono","Consolas","SFMono-Regular",monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme: dark;
-    --bg:#12161A; --surface:#1A2024; --surface-2:#202830; --surface-3:#242C34;
-    --ink:#ECEFEC; --ink-2:#A9B2AC; --ink-muted:#7C8680;
+    --bg:#1A1816; --surface:#242220; --surface-2:#2B2926; --surface-3:#332F2C;
+    --ink:#F0EEEC; --ink-2:#B8B2AC; --ink-muted:#8A8580;
     --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.22);
-    --accent:#3987e5; --accent-ink:#08131f;
+    --accent:#E8724F; --accent-ink:#1a0f0a;
     --good:#3fbf3f; --warning:#d9a53c; --critical:#e66767;
   }
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --bg:#12161A; --surface:#1A2024; --surface-2:#202830; --surface-3:#242C34;
-  --ink:#ECEFEC; --ink-2:#A9B2AC; --ink-muted:#7C8680;
+  --bg:#1A1816; --surface:#242220; --surface-2:#2B2926; --surface-3:#332F2C;
+  --ink:#F0EEEC; --ink-2:#B8B2AC; --ink-muted:#8A8580;
   --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.22);
-  --accent:#3987e5; --accent-ink:#08131f;
+  --accent:#E8724F; --accent-ink:#1a0f0a;
   --good:#3fbf3f; --warning:#d9a53c; --critical:#e66767;
 }
 :root[data-theme="light"]{
   color-scheme: light;
-  --bg:#F3F4F1; --surface:#FFFFFF; --surface-2:#ECEEEA; --surface-3:#E3E6E1;
-  --ink:#14181A; --ink-2:#4B534E; --ink-muted:#838A83;
-  --border:rgba(20,24,26,0.12); --border-strong:rgba(20,24,26,0.22);
-  --accent:#2a78d6; --accent-ink:#ffffff;
+  --bg:#F7F6F5; --surface:#FFFFFF; --surface-2:#F0EFED; --surface-3:#E8E6E3;
+  --ink:#32373C; --ink-2:#69727D; --ink-muted:#9099A1;
+  --border:rgba(50,55,60,0.14); --border-strong:rgba(50,55,60,0.26);
+  --accent:#DC5126; --accent-ink:#ffffff;
   --good:#0ca30c; --warning:#c98500; --critical:#d03b3b;
 }
 *{box-sizing:border-box;}
@@ -118,7 +121,7 @@ table.dt input[type=number]{width:80px;}
 
 <div id="authScreen" class="auth-screen">
   <div class="auth-card">
-    <h1>Обязательства-Платежи</h1>
+    <h1>Дайя-Финансы</h1>
     <p>Вход для сотрудников. Логин/пароль общие с остальными внутренними инструментами компании.</p>
     <input type="text" id="authEmail" placeholder="Логин (латиницей, без пробелов)" autocomplete="username">
     <input type="password" id="authPassword" placeholder="Пароль" autocomplete="current-password">
@@ -134,13 +137,13 @@ table.dt input[type=number]{width:80px;}
 <div class="app" id="appRoot" style="display:none;">
   <header class="top">
     <div class="userbar"><span class="email" id="userEmail"></span><button class="btn" id="signOutBtn">Выйти</button></div>
-    <h1>Обязательства-Платежи</h1>
+    <h1>Дайя-Финансы</h1>
     <p>Обязательства компании перед поставщиками, налоговой и клиентами (залоги) и приоритизация платежей — что нельзя не заплатить, и что регулярно утекает по мелочи.</p>
   </header>
 
   <div class="tabs" id="tabs">
-    <button class="tab-btn active" data-tab="registry">Реестр</button>
-    <button class="tab-btn" data-tab="import">Импорт</button>
+    <button class="tab-btn active" data-tab="import">Импорт</button>
+    <button class="tab-btn" data-tab="registry">Реестр</button>
     <button class="tab-btn" data-tab="overview">Структура обязательств</button>
     <button class="tab-btn" data-tab="queue">Очередь приоритизации</button>
     <button class="tab-btn" data-tab="budget">Бюджет</button>
@@ -153,7 +156,7 @@ table.dt input[type=number]{width:80px;}
   </div>
 
   <!-- РЕЕСТР -->
-  <div class="tab-panel active" id="panel-registry">
+  <div class="tab-panel" id="panel-registry">
     <div class="card">
       <h2>Касса сегодня <span class="hint">сколько реально есть денег на день</span></h2>
       <div class="field-row">
@@ -165,9 +168,10 @@ table.dt input[type=number]{width:80px;}
       </div>
       <div class="note" id="cashTotalNote"></div>
     </div>
+    <div id="dockCash"></div>
 
     <div class="card">
-      <h2>Новое обязательство <span class="hint">для ежедневного ввода — тип проставляется сам по статье</span></h2>
+      <h2>Новое обязательство <span class="hint">для ежедневного ввода — тип проставляется сам по статье, вручную или загрузкой счёта ниже</span></h2>
       <div class="field-row">
         <label>Сумма</label><input type="number" id="newAmount" step="0.01" min="0" style="width:120px;"><span class="unit">₽</span>
         <label>Контрагент</label><input type="text" id="newCounterparty" placeholder="ООО «Ромашка»" style="width:220px;">
@@ -177,11 +181,19 @@ table.dt input[type=number]{width:80px;}
       <div class="field-row">
         <label>Срок</label><input type="date" id="newDueDate">
         <label>Комментарий</label><input type="text" id="newNote" placeholder="необязательно" style="width:260px;">
+      </div>
+      <div class="field-row">
+        <label>Счёт на оплату</label><input type="file" id="invoiceFile" accept=".pdf,.jpg,.jpeg,.png">
+        <span class="note" id="invoiceStatus"></span>
+      </div>
+      <div class="field-row">
         <button class="btn primary" id="addObligationBtn">Добавить</button>
         <span class="note" id="addStatus"></span>
       </div>
-      <div class="note">Enter в поле «Сумма» или «Контрагент» — то же самое, что нажать «Добавить».</div>
+      <div class="note">Enter в поле «Сумма» или «Контрагент» — то же самое, что нажать «Добавить». Загрузка счёта (PDF) пробует распознать сумму и контрагента автоматически и подставить в поля выше — распознавание приблизительное, всегда проверяйте перед сохранением.</div>
     </div>
+    <div id="dockObl"></div>
+    <div id="dockPay"></div>
 
     <div class="card">
       <h2>Реестр обязательств</h2>
@@ -211,9 +223,13 @@ table.dt input[type=number]{width:80px;}
   </div>
 
   <!-- ИМПОРТ -->
-  <div class="tab-panel" id="panel-import">
-    <!-- Кредиторская задолженность -->
+  <div class="tab-panel active" id="panel-import">
     <div class="card">
+      <h2>Загрузка документов</h2>
+      <p>Здесь — все документы для загрузки в «Дайя-Финансы». На страницах «Реестр», «Бюджет» и «Прогноз» доступна загрузка только тех данных, которые нужны там — эти же формы, просто под рукой в контексте своей страницы.</p>
+    </div>
+    <!-- Кредиторская задолженность -->
+    <div class="card" id="cardObl">
       <h2>Загрузить кредиторскую задолженность <span class="hint">обязательства перед контрагентами</span></h2>
       <div class="field-row"><label>Файл</label><input type="file" id="impOblFile" accept=".xlsx,.xls,.csv"><span class="note" id="impOblFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
@@ -228,7 +244,7 @@ table.dt input[type=number]{width:80px;}
     </div>
 
     <!-- Бюджет -->
-    <div class="card">
+    <div class="card" id="cardBud">
       <h2>Загрузить бюджет <span class="hint">план по статьям на месяц — можно несколько строк на одну статью</span></h2>
       <div class="field-row"><label>Месяц бюджета</label><input type="month" id="impBudMonth"></div>
       <div class="field-row"><label>Файл</label><input type="file" id="impBudFile" accept=".xlsx,.xls,.csv"><span class="note" id="impBudFileStatus"></span></div>
@@ -245,7 +261,7 @@ table.dt input[type=number]{width:80px;}
     </div>
 
     <!-- Реестр платежей -->
-    <div class="card">
+    <div class="card" id="cardPay">
       <h2>Загрузить реестр платежей <span class="hint">уже сделанные оплаты — попадут в историю сразу закрытыми</span></h2>
       <div class="field-row"><label>Файл</label><input type="file" id="impPayFile" accept=".xlsx,.xls,.csv"><span class="note" id="impPayFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
@@ -260,7 +276,7 @@ table.dt input[type=number]{width:80px;}
     </div>
 
     <!-- Кассовая позиция -->
-    <div class="card">
+    <div class="card" id="cardCash">
       <h2>Загрузить кассовую позицию по дням <span class="hint">остаток на начало дня + поступления, если ведёте отдельным файлом</span></h2>
       <div class="field-row"><label>Файл</label><input type="file" id="impCashFile" accept=".xlsx,.xls,.csv"><span class="note" id="impCashFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
@@ -275,7 +291,7 @@ table.dt input[type=number]{width:80px;}
     </div>
 
     <!-- Поступления -->
-    <div class="card">
+    <div class="card" id="cardRec">
       <h2>Загрузить поступления <span class="hint">факт прихода денег, с привязкой к дате</span></h2>
       <div class="field-row"><label>Файл</label><input type="file" id="impRecFile" accept=".xlsx,.xls,.csv"><span class="note" id="impRecFileStatus"></span></div>
       <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
@@ -290,7 +306,7 @@ table.dt input[type=number]{width:80px;}
     </div>
 
     <!-- Бюджет доходов -->
-    <div class="card">
+    <div class="card" id="cardIncBud">
       <h2>Загрузить бюджет доходов <span class="hint">план по статьям дохода на месяц</span></h2>
       <div class="field-row"><label>Месяц бюджета</label><input type="month" id="impIncBudMonth"></div>
       <div class="field-row"><label>Файл</label><input type="file" id="impIncBudFile" accept=".xlsx,.xls,.csv"><span class="note" id="impIncBudFileStatus"></span></div>
@@ -441,6 +457,7 @@ table.dt input[type=number]{width:80px;}
     <div class="card">
       <h2>Расходы</h2>
     </div>
+    <div id="dockBud"></div>
     <div class="kpi-row" id="budgetKpiRow"></div>
     <div class="card">
       <div class="table-wrap"><table class="dt" id="budgetTable"></table></div>
@@ -451,6 +468,7 @@ table.dt input[type=number]{width:80px;}
     <div class="card">
       <h2>Доходы</h2>
     </div>
+    <div id="dockIncBud"></div>
     <div class="kpi-row" id="incomeBudgetKpiRow"></div>
     <div class="card">
       <div class="table-wrap"><table class="dt" id="incomeBudgetTable"></table></div>
@@ -469,6 +487,9 @@ table.dt input[type=number]{width:80px;}
     <div class="kpi-row" id="forecastNetKpiRow"></div>
     <div class="card">
       <h2>Доходы <span class="hint">факт на дату / прогноз на конец месяца / план</span></h2>
+    </div>
+    <div id="dockRec"></div>
+    <div class="card">
       <div class="kpi-row" id="forecastIncomeKpiRow"></div>
       <div class="table-wrap"><table class="dt" id="forecastIncomeTable"></table></div>
     </div>
@@ -520,6 +541,7 @@ table.dt input[type=number]{width:80px;}
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
 <script>
 (function(){
 "use strict";
@@ -527,6 +549,7 @@ table.dt input[type=number]{width:80px;}
 const SUPABASE_URL = "https://khzxfhxpcrjshsssghok.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_rrwlI1VXeWmQJ1Zn3YT3Ow_pUK04-ha";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js';
 
 const TIERS = [
   { key:'critical', label:'Критичный', hint:'деятельность серьёзно пострадает/остановится за несколько дней', badgeClass:'st-critical' },
@@ -552,7 +575,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;
 
 let obligations = [];           // pay_obligations rows
 let paymentsByObligation = new Map(); // obligation_id -> [pay_payments rows]
-let currentTab = 'registry';
+let currentTab = 'import';
 let isApprover = false;         // CEO/CFO — из app_metadata.role сессии, см. applyRoleFromSession()
 let openingBalances = [];       // pay_opening_balances rows — ручные оверрайды остатка на дату
 let cashPositions = [];         // pay_cash_positions rows, отсортированы по дате убыв.
@@ -563,6 +586,7 @@ let receipts = [];              // pay_receipts rows
 let incomeBudgetLines = [];     // pay_income_budget_lines rows
 let incomeBudgetRevisionsByLine = new Map();
 let incomeBudgetLineItemsByLine = new Map();
+let pendingInvoiceFile = null; // выбранный файл счёта на оплату — загружается в Storage вместе с созданием обязательства
 
 /* ---------- derived ---------- */
 function paidAmount(ob){ return (paymentsByObligation.get(ob.id)||[]).reduce((s,p)=>s+Number(p.amount||0),0); }
@@ -639,11 +663,39 @@ function applyRoleFromSession(session){
 }
 
 /* ---------- tabs ---------- */
+// Карточки импорта физически «живут» одним DOM-узлом в panel-import (там вся
+// логика IMPORT_TYPES/wireImportType завязана на фиксированные id) — вместо
+// дублирования на каждой странице узел переносится в плейсхолдер нужной
+// вкладки при переключении, а на вкладке «Импорт» всегда собран весь набор.
+const IMPORT_DOCK = {
+  obl:'cardObl', bud:'cardBud', pay:'cardPay',
+  cash:'cardCash', rec:'cardRec', incBud:'cardIncBud'
+};
+const IMPORT_DOCK_ORDER = ['obl','bud','pay','cash','rec','incBud'];
+const IMPORT_DOCK_TARGETS = { registry:['obl','pay','cash'], budget:['bud','incBud'], forecast:['rec'] };
+function syncImportDocking(tab){
+  const wanted = IMPORT_DOCK_TARGETS[tab] || [];
+  IMPORT_DOCK_ORDER.forEach(key=>{
+    const card = document.getElementById(IMPORT_DOCK[key]);
+    if(!card) return;
+    if(wanted.includes(key)){
+      const dock = document.getElementById('dock'+key[0].toUpperCase()+key.slice(1));
+      if(dock) dock.appendChild(card);
+    } else if(card.parentElement && card.parentElement.id !== 'panel-import'){
+      document.getElementById('panel-import').appendChild(card);
+    }
+  });
+  if(tab==='import'){
+    const home = document.getElementById('panel-import');
+    IMPORT_DOCK_ORDER.forEach(key=> home.appendChild(document.getElementById(IMPORT_DOCK[key])));
+  }
+}
 document.getElementById('tabs').addEventListener('click', e=>{
   const btn = e.target.closest('.tab-btn'); if(!btn) return;
   currentTab = btn.dataset.tab;
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b===btn));
   document.querySelectorAll('.tab-panel').forEach(p=> p.classList.toggle('active', p.id==='panel-'+currentTab));
+  syncImportDocking(currentTab);
   renderActiveTab();
 });
 function renderActiveTab(){
@@ -678,6 +730,61 @@ document.getElementById('newCategory').addEventListener('change', applyDefaultTi
 ['newAmount','newCounterparty'].forEach(id=>{
   document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('addObligationBtn').click(); } });
 });
+
+/* ---------- счёт на оплату: распознавание PDF + вложение файла ---------- */
+async function extractPdfText(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  const pagesToRead = Math.min(pdf.numPages, 2); // счёт обычно на первой странице, вторую читаем на всякий случай
+  for(let i=1;i<=pagesToRead;i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it=>it.str).join(' ') + '\n';
+  }
+  return text;
+}
+function guessInvoiceFields(text){
+  const result = { amount:null, counterparty:null };
+  const amountRe = /(?:итого\s*к\s*оплате|всего\s*к\s*оплате|сумма\s*к\s*оплате|итого)[^\d]{0,20}([\d][\d\s]{0,12}[.,]?\d{0,2})/i;
+  const am = text.match(amountRe);
+  if(am){
+    const num = parseImportAmount(am[1].replace(/\s/g,''));
+    if(isFinite(num) && num>0) result.amount = num;
+  }
+  const partyRe = /(?:получатель|поставщик|исполнитель)\s*:?\s*([^\n\r]{3,80})/i;
+  const pm = text.match(partyRe);
+  if(pm){
+    result.counterparty = pm[1].split(/(?:ИНН|КПП|Р\/с|БИК)/i)[0].trim().replace(/[.,;:]+$/,'');
+  } else {
+    const legalRe = /((?:ООО|ОАО|ЗАО|АО|ИП|ПАО)\s*[«"„][^»"”]{2,60}[»"”]|(?:ООО|ОАО|ЗАО|АО|ИП|ПАО)\s+[A-ЯЁ][^\n\r,]{2,60})/;
+    const lm = text.match(legalRe);
+    if(lm) result.counterparty = lm[0].trim();
+  }
+  return result;
+}
+document.getElementById('invoiceFile').addEventListener('change', async e=>{
+  const file = e.target.files[0] || null;
+  pendingInvoiceFile = file;
+  const statusEl = document.getElementById('invoiceStatus');
+  if(!file){ statusEl.textContent=''; return; }
+  const isPdf = file.type==='application/pdf' || /\.pdf$/i.test(file.name);
+  if(!isPdf){ statusEl.textContent = 'Изображение прикреплено — автораспознавание работает только для PDF с текстовым слоем, заполните сумму и контрагента вручную.'; return; }
+  statusEl.textContent = 'Читаю файл…';
+  try{
+    const text = await extractPdfText(file);
+    if(!text || !text.trim()){ statusEl.textContent = 'Счёт прикреплён. Текст не найден (похоже на скан-изображение) — заполните сумму и контрагента вручную.'; return; }
+    const found = guessInvoiceFields(text);
+    const filled = [];
+    const amountEl = document.getElementById('newAmount'), counterpartyEl = document.getElementById('newCounterparty');
+    if(found.amount!=null && !amountEl.value){ amountEl.value = found.amount; filled.push('сумма'); }
+    if(found.counterparty && !counterpartyEl.value){ counterpartyEl.value = found.counterparty; filled.push('контрагент'); }
+    statusEl.textContent = filled.length ? ('Распознано (проверьте!): '+filled.join(', ')+'.') : 'Счёт прикреплён. Автоматически распознать сумму/контрагента не удалось — заполните вручную.';
+  } catch(err){
+    statusEl.textContent = 'Счёт прикреплён, но не удалось прочитать текст: '+err.message+' — заполните поля вручную.';
+  }
+});
+
 document.getElementById('addObligationBtn').addEventListener('click', async ()=>{
   const statusEl = document.getElementById('addStatus');
   const counterparty = document.getElementById('newCounterparty').value.trim();
@@ -689,17 +796,26 @@ document.getElementById('addObligationBtn').addEventListener('click', async ()=>
   if(!counterparty){ statusEl.textContent='Укажите контрагента.'; return; }
   if(!amount || amount<=0){ statusEl.textContent='Укажите сумму больше нуля.'; return; }
   const { data:{ session } } = await sb.auth.getSession();
-  const { error } = await sb.from('pay_obligations').insert({
+  const { data: newOb, error } = await sb.from('pay_obligations').insert({
     counterparty, category, amount, due_date, tier, note,
     created_by: session.user.id, created_by_email: session.user.email
-  });
+  }).select().single();
   if(error){ statusEl.textContent='Ошибка: '+error.message; return; }
   statusEl.textContent='Добавлено.';
+  if(pendingInvoiceFile){
+    const path = newOb.id+'/'+Date.now()+'-'+pendingInvoiceFile.name.replace(/[^\w.\-]+/g,'_');
+    const { error: upErr } = await sb.storage.from('invoices').upload(path, pendingInvoiceFile);
+    if(upErr){ statusEl.textContent = 'Добавлено, но счёт не загрузился: '+upErr.message; }
+    else await sb.from('pay_obligations').update({ invoice_path: path }).eq('id', newOb.id);
+  }
   // Статья и срок часто повторяются подряд при пакетном вводе за день — не сбрасываем их,
   // только сумму/контрагента/комментарий, и сразу возвращаем фокус для следующей строки.
   document.getElementById('newCounterparty').value='';
   document.getElementById('newAmount').value='';
   document.getElementById('newNote').value='';
+  document.getElementById('invoiceFile').value='';
+  document.getElementById('invoiceStatus').textContent='';
+  pendingInvoiceFile = null;
   document.getElementById('newAmount').focus();
   await loadAll();
 });
@@ -738,7 +854,8 @@ function renderRegistry(){
     const rem = remaining(ob);
     const paidCount = (paymentsByObligation.get(ob.id)||[]).length;
     h += '<tr>'
-       + '<td class="rowlabel">'+esc(ob.counterparty)+(ob.note?'<div class="note">'+esc(ob.note)+'</div>':'')+'</td>'
+       + '<td class="rowlabel">'+esc(ob.counterparty)+(ob.note?'<div class="note">'+esc(ob.note)+'</div>':'')
+         +(ob.invoice_path?'<div class="note clickable viewInvoiceLink" data-id="'+ob.id+'">счёт</div>':'')+'</td>'
        + '<td>'+categorySelectCell(ob)+'</td>'
        + '<td>'+tierSelectCell(ob)+'</td>'
        + '<td class="num">'+fmtRub(ob.amount)+'</td>'
@@ -809,6 +926,17 @@ document.getElementById('registryTable').addEventListener('click', async e=>{
   if(showPaymentsLink){
     openPaymentsObligationId = showPaymentsLink.dataset.id;
     renderPaymentHistory();
+    return;
+  }
+  const viewInvoiceLink = e.target.closest('.viewInvoiceLink');
+  if(viewInvoiceLink){
+    const ob = obligations.find(o=>o.id===viewInvoiceLink.dataset.id);
+    if(!ob || !ob.invoice_path) return;
+    viewInvoiceLink.textContent = 'открываю…';
+    const { data, error } = await sb.storage.from('invoices').createSignedUrl(ob.invoice_path, 60);
+    viewInvoiceLink.textContent = 'счёт';
+    if(error){ alert('Не удалось открыть счёт: '+error.message); return; }
+    window.open(data.signedUrl, '_blank');
     return;
   }
   const { data:{ session } } = await sb.auth.getSession();
