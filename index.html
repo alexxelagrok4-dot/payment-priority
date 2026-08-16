@@ -39,24 +39,26 @@
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
-body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased;}
 h1,h2{text-wrap:balance;margin:0;}
-.app{max-width:1200px;margin:0 auto;padding:28px 24px 80px;}
+.app{max-width:1280px;margin:0 auto;padding:28px 24px 80px;}
 header.top{margin-bottom:16px;}
 header.top h1{font-size:22px;font-weight:700;letter-spacing:-0.01em;}
 header.top p{margin:6px 0 0;color:var(--ink-2);font-size:13.5px;max-width:78ch;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;}
 .card + .card{margin-top:16px;}
-.card h2{font-size:12px;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-2);font-weight:700;margin-bottom:14px;}
-.card h2 .hint{text-transform:none;letter-spacing:0;color:var(--ink-muted);font-weight:400;font-size:12px;margin-left:8px;}
-.field-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
-.field-row label{color:var(--ink-2);font-size:13px;}
+.card h2{font-size:12.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-2);font-weight:700;margin-bottom:15px;}
+.card h2 .hint{text-transform:none;letter-spacing:0;color:var(--ink-muted);font-weight:400;font-size:12.5px;margin-left:8px;}
+.field-row{display:flex;align-items:center;gap:11px;margin-bottom:11px;flex-wrap:wrap;}
+.field-row label{color:var(--ink-2);font-size:13.5px;font-weight:600;}
 input[type=number],input[type=text],input[type=date],select{
   font:inherit;font-family:var(--font-mono);font-size:13.5px;color:var(--ink);
   background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);
   padding:6px 9px;font-variant-numeric:tabular-nums;
 }
 input[type=text],select{font-family:var(--font-ui);}
+textarea{font:inherit;font-family:var(--font-mono);font-size:12.5px;color:var(--ink);background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:8px 9px;width:100%;resize:vertical;}
+textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
 input[type=checkbox]{width:auto;}
 input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
 .btn{appearance:none;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--ink);font:inherit;font-weight:600;font-size:12.5px;padding:7px 13px;border-radius:var(--radius-sm);cursor:pointer;}
@@ -79,15 +81,14 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline
 .userbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-2);margin-bottom:8px;}
 .userbar .email{font-family:var(--font-mono);}
 
-.tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
-.tab-btn{appearance:none;border:none;background:none;color:var(--ink-2);font:inherit;font-weight:600;font-size:13px;padding:9px 4px;margin-right:14px;cursor:pointer;border-bottom:2px solid transparent;}
+.tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--border);flex-wrap:wrap;row-gap:2px;}
+.tab-btn{appearance:none;border:none;background:none;color:var(--ink-2);font:inherit;font-weight:600;font-size:13.5px;padding:10px 4px;margin-right:16px;cursor:pointer;border-bottom:2px solid transparent;}
 .tab-btn:hover{color:var(--ink);}
 .tab-btn.active{color:var(--ink);border-bottom-color:var(--accent);}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
 
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
-@media (max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;}
 .kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-muted);font-weight:600;margin-bottom:6px;}
 .kpi .value{font-family:var(--font-mono);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
@@ -101,9 +102,9 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline
 .badge.st-none{background:var(--surface-3);color:var(--ink-2);}
 
 .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
-table.dt{border-collapse:collapse;width:100%;font-size:13px;min-width:560px;}
-table.dt th,table.dt td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
-table.dt thead th{background:var(--surface-2);color:var(--ink-2);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:0.04em;}
+table.dt{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px;}
+table.dt th,table.dt td{padding:9px 11px;border-bottom:1px solid var(--border);white-space:nowrap;}
+table.dt thead th{background:var(--surface-2);color:var(--ink-2);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;}
 table.dt tbody tr:last-child td{border-bottom:none;}
 table.dt tbody tr.total-row td{font-weight:700;background:var(--surface-2);}
 table.dt td.rowlabel,table.dt th.rowlabel{text-align:left;font-weight:600;color:var(--ink);}
@@ -139,8 +140,10 @@ table.dt input[type=number]{width:80px;}
 
   <div class="tabs" id="tabs">
     <button class="tab-btn active" data-tab="registry">Реестр</button>
+    <button class="tab-btn" data-tab="import">Импорт</button>
     <button class="tab-btn" data-tab="overview">Структура обязательств</button>
     <button class="tab-btn" data-tab="queue">Очередь приоритизации</button>
+    <button class="tab-btn" data-tab="budget">Бюджет</button>
     <button class="tab-btn" data-tab="summary">Итоги периода</button>
     <button class="tab-btn" data-tab="leaks">Утечки</button>
     <button class="tab-btn" data-tab="dynamics">Динамика</button>
@@ -150,6 +153,18 @@ table.dt input[type=number]{width:80px;}
 
   <!-- РЕЕСТР -->
   <div class="tab-panel active" id="panel-registry">
+    <div class="card">
+      <h2>Касса сегодня <span class="hint">сколько реально есть денег на день</span></h2>
+      <div class="field-row">
+        <label>Дата</label><input type="date" id="cashDate">
+        <label>Остаток на начало дня</label><input type="number" id="cashOpening" step="0.01" style="width:130px;"><span class="unit">₽</span>
+        <label>Поступления за вчера</label><input type="number" id="cashInflow" step="0.01" style="width:130px;"><span class="unit">₽</span>
+        <button class="btn primary" id="saveCashBtn">Сохранить</button>
+        <span class="note" id="cashStatus"></span>
+      </div>
+      <div class="note" id="cashTotalNote"></div>
+    </div>
+
     <div class="card">
       <h2>Новое обязательство <span class="hint">для ежедневного ввода — тип проставляется сам по статье</span></h2>
       <div class="field-row">
@@ -194,6 +209,35 @@ table.dt input[type=number]{width:80px;}
     </div>
   </div>
 
+  <!-- ИМПОРТ -->
+  <div class="tab-panel" id="panel-import">
+    <div class="card">
+      <h2>Импорт обязательств <span class="hint">вставьте таблицу из Excel/1С — формат любой, колонки сопоставите на следующем шаге</span></h2>
+      <div class="field-row">
+        <textarea id="importPaste" placeholder="Скопируйте диапазон ячеек из Excel (Ctrl+C) и вставьте сюда (Ctrl+V). Первая строка — заголовки." style="min-height:110px;"></textarea>
+      </div>
+      <div class="field-row">
+        <button class="btn primary" id="importParseBtn">Разобрать</button>
+        <span class="note" id="importParseStatus"></span>
+      </div>
+    </div>
+    <div class="card" id="importMappingCard" style="display:none;">
+      <h2>Какая колонка за что отвечает</h2>
+      <div class="field-row">
+        <label>Контрагент *</label><select id="importColCounterparty"></select>
+        <label>Сумма *</label><select id="importColAmount"></select>
+        <label>Срок</label><select id="importColDueDate"></select>
+        <label>Статья</label><select id="importColCategory"></select>
+      </div>
+      <div class="note">Статья необязательна — если не сопоставить, все строки получат статью «Не распределено», и её нужно будет проставить в «Реестре» вручную (там статья редактируется прямо в таблице).</div>
+      <div class="table-wrap" style="margin-top:10px;"><table class="dt" id="importPreviewTable"></table></div>
+      <div class="field-row" style="margin-top:10px;">
+        <button class="btn primary" id="importConfirmBtn">Импортировать</button>
+        <span class="note" id="importConfirmStatus"></span>
+      </div>
+    </div>
+  </div>
+
   <!-- СТРУКТУРА ОБЯЗАТЕЛЬСТВ -->
   <div class="tab-panel" id="panel-overview">
     <div class="card">
@@ -205,8 +249,9 @@ table.dt input[type=number]{width:80px;}
       <div class="table-wrap"><table class="dt" id="overviewTierTable"></table></div>
     </div>
     <div class="card">
-      <h2>Структура по статьям</h2>
+      <h2>Структура по статьям <span class="hint">клик по статье — контрагенты внутри неё</span></h2>
       <div class="table-wrap"><table class="dt" id="overviewCategoryTable"></table></div>
+      <div id="overviewDrillBox"></div>
     </div>
     <div class="card">
       <h2>Топ контрагентов по открытому остатку</h2>
@@ -218,6 +263,14 @@ table.dt input[type=number]{width:80px;}
       <div class="field-row">
         <label>На начало</label><input type="date" id="compareFrom">
         <label>На конец</label><input type="date" id="compareTo">
+      </div>
+      <div class="note">Если в реестре ещё нет полной истории на эту дату — задайте известный остаток вручную:</div>
+      <div class="field-row">
+        <label>Дата</label><input type="date" id="openingDate">
+        <label>Статья</label><select id="openingCategory"><option value="">Итого (все статьи)</option></select>
+        <label>Остаток</label><input type="number" id="openingAmount" step="0.01" style="width:130px;"><span class="unit">₽</span>
+        <button class="btn" id="saveOpeningBtn">Сохранить как известный остаток</button>
+        <span class="note" id="openingStatus"></span>
       </div>
     </div>
     <div class="kpi-row" id="compareKpiRow"></div>
@@ -234,7 +287,7 @@ table.dt input[type=number]{width:80px;}
   <!-- ОЧЕРЕДЬ -->
   <div class="tab-panel" id="panel-queue">
     <div class="card">
-      <h2>Очередь приоритизации <span class="hint">Базовые → Рост → Нерелевантные, внутри группы — по сроку</span></h2>
+      <h2>Очередь приоритизации <span class="hint">Критичный → Важный операционный → Операционный → Низкий приоритет, внутри группы — по сроку</span></h2>
       <div class="field-row"><label>Ближайший горизонт до даты</label><input type="date" id="queueDate"></div>
     </div>
     <div class="kpi-row" id="queueKpiRow"></div>
@@ -244,7 +297,7 @@ table.dt input[type=number]{width:80px;}
   <!-- УТЕЧКИ -->
   <div class="tab-panel" id="panel-leaks">
     <div class="card">
-      <h2>Отчёт об утечках <span class="hint">нерелевантные бизнесу платежи за период</span></h2>
+      <h2>Отчёт об утечках <span class="hint">платежи низкого приоритета за период</span></h2>
       <div class="field-row">
         <label>С</label><input type="date" id="leakFrom">
         <label>По</label><input type="date" id="leakTo">
@@ -270,9 +323,9 @@ table.dt input[type=number]{width:80px;}
       <div class="note">Открытый остаток = сумма обязательств минус оплаты, зачтённые к этой дате. Рост — обязательства перед статьёй растут, снижение — гасятся. Отменённые обязательства в расчёт не входят.</div>
     </div>
     <div class="card">
-      <h2>По типу платежа <span class="hint">Базовые / Рост / Нерелевантные</span></h2>
+      <h2>По типу платежа <span class="hint">Критичный / Важный операционный / Операционный / Низкий приоритет</span></h2>
       <div class="table-wrap"><table class="dt" id="dynamicsTierTable"></table></div>
-      <div class="note">В идеале «Нерелевантные» должны стремиться к нулю, а «Рост» — расти осознанно, а не наравне с «Базовыми».</div>
+      <div class="note">В идеале «Низкий приоритет» должен стремиться к нулю, а «Критичный» — не расти бесконтрольно.</div>
     </div>
   </div>
 
@@ -291,6 +344,20 @@ table.dt input[type=number]{width:80px;}
       <h2>Приоритет по статье <span class="hint">проставляется автоматически при выборе статьи в форме ввода</span></h2>
       <div class="table-wrap"><table class="dt" id="prioritiesTable"></table></div>
       <div class="note">Приоритет меняется здесь один раз для всей статьи — дальше при добавлении обязательства тип подставляется сам (для конкретного платежа его всё равно можно поменять вручную в форме ввода). Удаление статьи убирает её только из списка для новых обязательств — уже созданные обязательства с этой статьёй остаются как есть.</div>
+    </div>
+  </div>
+
+  <!-- БЮДЖЕТ -->
+  <div class="tab-panel" id="panel-budget">
+    <div class="card">
+      <h2>Бюджет на месяц <span class="hint">план по статьям, корректировки, факт</span></h2>
+      <div class="field-row"><label>Месяц</label><input type="month" id="budgetMonth"></div>
+    </div>
+    <div class="kpi-row" id="budgetKpiRow"></div>
+    <div class="card">
+      <div class="table-wrap"><table class="dt" id="budgetTable"></table></div>
+      <div id="budgetDrillBox"></div>
+      <div class="note">«Первоначальный план» ставится один раз при создании строки и не меняется — это эталон, с которым сравнивается «Текущий план» после корректировок (насколько разъехалось планирование). Любое изменение текущего плана просит причину и попадает в историю (клик по «Корректировка»). «Факт» — реально оплачено по статье в этом месяце.</div>
     </div>
   </div>
 
@@ -342,9 +409,10 @@ const SUPABASE_ANON_KEY = "sb_publishable_rrwlI1VXeWmQJ1Zn3YT3Ow_pUK04-ha";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const TIERS = [
-  { key:'base', label:'Базовые', hint:'без этого бизнес останавливается', badgeClass:'st-critical' },
-  { key:'growth', label:'Рост', hint:'наём персонала, оборудование для аренды — инвестиции в рост', badgeClass:'st-warn' },
-  { key:'irrelevant', label:'Нерелевантные', hint:'не относится к работе бизнеса', badgeClass:'st-none' }
+  { key:'critical', label:'Критичный', hint:'деятельность серьёзно пострадает/остановится за несколько дней', badgeClass:'st-critical' },
+  { key:'important_operational', label:'Важный операционный', hint:'не остановит бизнес, но упадёт производительность/утилизация', badgeClass:'st-warn' },
+  { key:'operational', label:'Операционный', hint:'относится к основной деятельности, критичных последствий в горизонте 30 дней нет', badgeClass:'st-none' },
+  { key:'low', label:'Низкий приоритет', hint:'не относится к основной деятельности', badgeClass:'st-good' }
 ];
 function tierInfo(key){ return TIERS.find(t=>t.key===key) || TIERS[0]; }
 
@@ -353,7 +421,7 @@ function tierInfo(key){ return TIERS.find(t=>t.key===key) || TIERS[0]; }
 // и categoryPriority заполняются из одного и того же запроса в loadAll().
 let categoryList = [];
 let categoryPriority = new Map(); // category -> tier
-function defaultTierForCategory(cat){ return categoryPriority.get(cat) || 'base'; }
+function defaultTierForCategory(cat){ return categoryPriority.get(cat) || 'operational'; }
 
 const nf0 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
 const nf1 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:1});
@@ -366,6 +434,10 @@ let obligations = [];           // pay_obligations rows
 let paymentsByObligation = new Map(); // obligation_id -> [pay_payments rows]
 let currentTab = 'registry';
 let isApprover = false;         // CEO/CFO — из app_metadata.role сессии, см. applyRoleFromSession()
+let openingBalances = [];       // pay_opening_balances rows — ручные оверрайды остатка на дату
+let cashPositions = [];         // pay_cash_positions rows, отсортированы по дате убыв.
+let budgetLines = [];           // pay_budget_lines rows
+let budgetRevisionsByLine = new Map(); // budget_line_id -> [pay_budget_revisions rows]
 
 /* ---------- derived ---------- */
 function paidAmount(ob){ return (paymentsByObligation.get(ob.id)||[]).reduce((s,p)=>s+Number(p.amount||0),0); }
@@ -401,6 +473,15 @@ async function loadAll(){
   const { data: prData } = await sb.from('pay_category_priorities').select('*').order('category',{ascending:true});
   categoryList = (prData||[]).map(r=>r.category);
   categoryPriority = new Map((prData||[]).map(r=>[r.category, r.tier]));
+  const { data: openingData } = await sb.from('pay_opening_balances').select('*');
+  openingBalances = openingData||[];
+  const { data: cashData } = await sb.from('pay_cash_positions').select('*').order('position_date',{ascending:false});
+  cashPositions = cashData||[];
+  const { data: budgetLineData } = await sb.from('pay_budget_lines').select('*');
+  budgetLines = budgetLineData||[];
+  const { data: budgetRevData } = await sb.from('pay_budget_revisions').select('*').order('changed_at',{ascending:false});
+  budgetRevisionsByLine = new Map();
+  (budgetRevData||[]).forEach(r=>{ if(!budgetRevisionsByLine.has(r.budget_line_id)) budgetRevisionsByLine.set(r.budget_line_id, []); budgetRevisionsByLine.get(r.budget_line_id).push(r); });
   renderActiveTab();
   updateApprovalBadge();
 }
@@ -425,9 +506,10 @@ document.getElementById('tabs').addEventListener('click', e=>{
   renderActiveTab();
 });
 function renderActiveTab(){
-  if(currentTab==='registry') renderRegistry();
+  if(currentTab==='registry'){ renderRegistry(); renderCashCard(); }
   else if(currentTab==='overview') renderOverview();
   else if(currentTab==='queue') renderQueue();
+  else if(currentTab==='budget') renderBudget();
   else if(currentTab==='summary') renderSummary();
   else if(currentTab==='leaks') renderLeaks();
   else if(currentTab==='dynamics') renderDynamics();
@@ -444,6 +526,7 @@ function populateSelects(){
   document.getElementById('newTier').innerHTML = tierOpts;
   document.getElementById('filterTier').innerHTML = '<option value="">Все</option>'+tierOpts;
   document.getElementById('newCategoryTier').innerHTML = tierOpts;
+  document.getElementById('openingCategory').innerHTML = '<option value="">Итого (все статьи)</option>'+catOpts;
   applyDefaultTier();
 }
 function applyDefaultTier(){
@@ -500,6 +583,7 @@ function filteredObligations(){
   document.getElementById(id).addEventListener('change', renderRegistry);
 });
 let openPaymentsObligationId = null;
+let openBudgetRevisionsLineId = null;
 function renderRegistry(){
   const rows = filteredObligations();
   const el = document.getElementById('registryTable');
@@ -511,8 +595,8 @@ function renderRegistry(){
     const paidCount = (paymentsByObligation.get(ob.id)||[]).length;
     h += '<tr>'
        + '<td class="rowlabel">'+esc(ob.counterparty)+(ob.note?'<div class="note">'+esc(ob.note)+'</div>':'')+'</td>'
-       + '<td>'+esc(ob.category)+'</td>'
-       + '<td>'+tierBadge(ob)+'</td>'
+       + '<td>'+categorySelectCell(ob)+'</td>'
+       + '<td>'+tierSelectCell(ob)+'</td>'
        + '<td class="num">'+fmtRub(ob.amount)+'</td>'
        + '<td class="num">'+fmtRub(rem)
          +(paidCount?'<div class="note clickable showPaymentsLink" data-id="'+ob.id+'">оплат: '+paidCount+' — показать/удалить</div>':'')
@@ -527,6 +611,30 @@ function renderRegistry(){
   el.innerHTML = h;
   renderPaymentHistory();
 }
+function categorySelectCell(ob){
+  let opts = categoryList.map(c=>'<option value="'+esc(c)+'"'+(c===ob.category?' selected':'')+'>'+esc(c)+'</option>').join('');
+  if(!categoryList.includes(ob.category)) opts += '<option value="'+esc(ob.category)+'" selected>'+esc(ob.category)+' (удалена из справочника)</option>';
+  return '<select class="inlineCategorySelect" data-id="'+ob.id+'">'+opts+'</select>';
+}
+function tierSelectCell(ob){
+  const opts = TIERS.map(t=>'<option value="'+t.key+'"'+(t.key===ob.tier?' selected':'')+'>'+esc(t.label)+'</option>').join('');
+  return '<select class="inlineTierSelect" data-id="'+ob.id+'">'+opts+'</select>';
+}
+document.getElementById('registryTable').addEventListener('change', async e=>{
+  const catSel = e.target.closest('.inlineCategorySelect');
+  if(catSel){
+    const category = catSel.value;
+    await sb.from('pay_obligations').update({ category, tier: defaultTierForCategory(category), updated_at: new Date().toISOString() }).eq('id', catSel.dataset.id);
+    await loadAll();
+    return;
+  }
+  const tierSel = e.target.closest('.inlineTierSelect');
+  if(tierSel){
+    await sb.from('pay_obligations').update({ tier: tierSel.value, updated_at: new Date().toISOString() }).eq('id', tierSel.dataset.id);
+    await loadAll();
+    return;
+  }
+});
 function renderPaymentHistory(){
   const box = document.getElementById('registryDrillBox');
   if(!openPaymentsObligationId){ box.innerHTML=''; return; }
@@ -607,6 +715,142 @@ document.getElementById('registryDrillBox').addEventListener('click', async e=>{
   }
 });
 
+/* ---------- cash position ---------- */
+function todaysCashPosition(){ return cashPositions.find(p=>p.position_date===todayISO()) || null; }
+function latestCashPosition(){ return cashPositions.length ? cashPositions[0] : null; } // уже отсортировано убыв. по дате в loadAll()
+function renderCashCard(){
+  const dateEl = document.getElementById('cashDate');
+  if(!dateEl.value) dateEl.value = todayISO();
+  const existing = cashPositions.find(p=>p.position_date===dateEl.value);
+  document.getElementById('cashOpening').value = existing ? existing.opening_balance : '';
+  document.getElementById('cashInflow').value = existing ? existing.prior_day_inflow : '';
+  updateCashTotalNote();
+}
+function updateCashTotalNote(){
+  const opening = Number(document.getElementById('cashOpening').value)||0;
+  const inflow = Number(document.getElementById('cashInflow').value)||0;
+  document.getElementById('cashTotalNote').textContent = 'Итого располагаемо: '+fmtRub(opening+inflow);
+}
+document.getElementById('cashDate').addEventListener('change', renderCashCard);
+['cashOpening','cashInflow'].forEach(id=> document.getElementById(id).addEventListener('input', updateCashTotalNote));
+document.getElementById('saveCashBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('cashStatus');
+  const position_date = document.getElementById('cashDate').value || todayISO();
+  const opening_balance = Number(document.getElementById('cashOpening').value)||0;
+  const prior_day_inflow = Number(document.getElementById('cashInflow').value)||0;
+  const { data:{ session } } = await sb.auth.getSession();
+  const existing = cashPositions.find(p=>p.position_date===position_date);
+  const payload = { position_date, opening_balance, prior_day_inflow, created_by: session.user.id, created_by_email: session.user.email };
+  const { error } = existing
+    ? await sb.from('pay_cash_positions').update(payload).eq('id', existing.id)
+    : await sb.from('pay_cash_positions').insert(payload);
+  statusEl.textContent = error ? 'Ошибка: '+error.message : 'Сохранено.';
+  await loadAll();
+});
+
+/* ---------- import ---------- */
+let importHeaders = [];
+let importRows = [];
+function parseImportAmount(s){
+  if(s==null) return NaN;
+  let v = String(s).replace(/[^\d,.\-]/g,'');
+  if(v.includes(',') && v.includes('.')) v = v.replace(/,/g,'');
+  else if(v.includes(',')) v = v.replace(',', '.');
+  return Number(v);
+}
+function parseImportDate(s){
+  if(!s) return null;
+  const t = String(s).trim();
+  let m = t.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return m[0].slice(0,10);
+  m = t.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if(m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  return null;
+}
+document.getElementById('importParseBtn').addEventListener('click', ()=>{
+  const statusEl = document.getElementById('importParseStatus');
+  const raw = document.getElementById('importPaste').value;
+  if(!raw.trim()){ statusEl.textContent='Вставьте данные.'; return; }
+  const lines = raw.split(/\r?\n/).filter(l=>l.trim().length);
+  if(lines.length < 2){ statusEl.textContent='Нужна хотя бы строка заголовков и одна строка данных.'; return; }
+  const delim = lines[0].includes('\t') ? '\t' : ',';
+  importHeaders = lines[0].split(delim).map(h=>h.trim());
+  importRows = lines.slice(1).map(line=> line.split(delim).map(c=>c.trim()));
+  statusEl.textContent = 'Разобрано строк: '+importRows.length;
+  populateImportMapping();
+  document.getElementById('importMappingCard').style.display = '';
+});
+function populateImportMapping(){
+  const opts = '<option value="">— не указано —</option>' + importHeaders.map((h,i)=>'<option value="'+i+'">'+esc(h)+'</option>').join('');
+  ['importColCounterparty','importColAmount','importColDueDate','importColCategory'].forEach(id=> document.getElementById(id).innerHTML = opts);
+  const guessIdx = patterns => importHeaders.findIndex(h=> patterns.some(p=> h.toLowerCase().includes(p)));
+  const setGuess = (id, patterns)=>{ const idx = guessIdx(patterns); if(idx>=0) document.getElementById(id).value = String(idx); };
+  setGuess('importColCounterparty', ['контрагент','клиент','поставщик','наименование']);
+  setGuess('importColAmount', ['сумма','итого']);
+  setGuess('importColDueDate', ['срок','дата']);
+  setGuess('importColCategory', ['статья','категория']);
+  renderImportPreview();
+}
+['importColCounterparty','importColAmount','importColDueDate','importColCategory'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', renderImportPreview);
+});
+function renderImportPreview(){
+  const ci = document.getElementById('importColCounterparty').value;
+  const ai = document.getElementById('importColAmount').value;
+  const di = document.getElementById('importColDueDate').value;
+  const cai = document.getElementById('importColCategory').value;
+  let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Сумма</th><th>Срок</th><th>Статья</th></tr></thead><tbody>';
+  importRows.slice(0,20).forEach(row=>{
+    h += '<tr><td class="rowlabel">'+esc(ci!==''?row[ci]:'')+'</td>'
+       + '<td class="num">'+esc(ai!==''?row[ai]:'')+'</td>'
+       + '<td>'+esc(di!==''?row[di]:'')+'</td>'
+       + '<td>'+esc((cai!=='' && row[cai]) ? row[cai] : 'Не распределено')+'</td></tr>';
+  });
+  h += '</tbody>';
+  document.getElementById('importPreviewTable').innerHTML = h;
+  document.getElementById('importConfirmStatus').textContent = 'Строк для импорта: '+importRows.length+(importRows.length>20?' (показаны первые 20)':'');
+}
+document.getElementById('importConfirmBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('importConfirmStatus');
+  const ci = document.getElementById('importColCounterparty').value;
+  const ai = document.getElementById('importColAmount').value;
+  const di = document.getElementById('importColDueDate').value;
+  const cai = document.getElementById('importColCategory').value;
+  if(ci===''||ai===''){ statusEl.textContent='Сопоставьте хотя бы Контрагента и Сумму.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+
+  if(!categoryList.includes('Не распределено')){
+    await sb.from('pay_category_priorities').insert({ category:'Не распределено', tier:'operational', updated_by: session.user.id, updated_by_email: session.user.email });
+  }
+
+  const { data: uploadRow, error: uploadErr } = await sb.from('pay_uploads')
+    .insert({ filename: null, period_label: todayISO(), uploaded_by: session.user.id, uploaded_by_email: session.user.email })
+    .select().single();
+  if(uploadErr){ statusEl.textContent = 'Ошибка: '+uploadErr.message; return; }
+
+  const rows = importRows.map(row=>{
+    const counterparty = (ci!==''?row[ci]:'').trim();
+    const amount = parseImportAmount(ai!==''?row[ai]:'');
+    const due_date = di!=='' ? parseImportDate(row[di]) : null;
+    const category = (cai!=='' && row[cai] && row[cai].trim()) ? row[cai].trim() : 'Не распределено';
+    return { counterparty, amount, due_date, category };
+  }).filter(r=> r.counterparty && isFinite(r.amount) && r.amount>0);
+
+  if(!rows.length){ statusEl.textContent='Нет корректных строк для импорта (проверьте сопоставление колонок и формат сумм).'; return; }
+
+  const inserts = rows.map(r=> ({
+    counterparty: r.counterparty, amount: r.amount, due_date: r.due_date, category: r.category,
+    tier: defaultTierForCategory(r.category), source:'upload', upload_batch_id: uploadRow.id,
+    created_by: session.user.id, created_by_email: session.user.email
+  }));
+  const { error } = await sb.from('pay_obligations').insert(inserts);
+  if(error){ statusEl.textContent = 'Ошибка: '+error.message; return; }
+  statusEl.textContent = 'Импортировано: '+inserts.length+'.';
+  document.getElementById('importPaste').value = '';
+  document.getElementById('importMappingCard').style.display = 'none';
+  importRows = []; importHeaders = [];
+  await loadAll();
+});
+
 /* ---------- queue ---------- */
 document.getElementById('queueDate').addEventListener('change', renderQueue);
 function renderQueue(){
@@ -623,8 +867,19 @@ function renderQueue(){
   });
   const totalHorizon = groups.reduce((s,g)=>s+g.horizon,0);
 
+  const cashPos = todaysCashPosition() || latestCashPosition();
+  const available = cashPos ? Number(cashPos.opening_balance||0)+Number(cashPos.prior_day_inflow||0) : null;
+  const criticalGroup = groups.find(g=>g.tier.key==='critical');
+  const criticalSum = criticalGroup ? criticalGroup.all : 0;
+  const gap = available!=null ? available - criticalSum : null;
+  const availableKpi = available!=null
+    ? kpi('Доступно'+(cashPos.position_date===todayISO()?' сегодня':' (на '+fmtDate(cashPos.position_date)+')'), fmtRub(available),
+        gap!=null && gap<0 ? '<span class="badge st-critical">разрыв: не хватает '+fmtRub(-gap)+' на критичное</span>' : 'хватает на критичное')
+    : kpi('Доступно сегодня', '—', 'кассовая позиция не введена — см. «Реестр»');
+
   document.getElementById('queueKpiRow').innerHTML =
-      groups.map(g=> kpi(g.tier.label+' — всего открыто', fmtRub(g.all), 'из них к '+fmtDate(horizon)+': '+fmtRub(g.horizon))).join('')
+      availableKpi
+    + groups.map(g=> kpi(g.tier.label+' — всего открыто', fmtRub(g.all), 'из них к '+fmtDate(horizon)+': '+fmtRub(g.horizon))).join('')
     + kpi('Нужно к '+fmtDate(horizon), fmtRub(totalHorizon));
 
   document.getElementById('queueGroups').innerHTML = groups.map(g=>
@@ -659,7 +914,7 @@ function renderLeaks(){
   const byCategory = new Map();
   let totalCount=0, totalSum=0;
   obligations.forEach(ob=>{
-    if(ob.tier!=='irrelevant') return;
+    if(ob.tier!=='low') return;
     (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
       if(p.paid_at < from || p.paid_at > to) return;
       totalCount++; totalSum += Number(p.amount||0);
@@ -673,7 +928,7 @@ function renderLeaks(){
   });
 
   document.getElementById('leakKpiRow').innerHTML =
-      kpi('Нерелевантных платежей', String(totalCount), fmtDate(from)+' — '+fmtDate(to))
+      kpi('Платежей низкого приоритета', String(totalCount), fmtDate(from)+' — '+fmtDate(to))
     + kpi('На сумму', fmtRub(totalSum))
     + kpi('Контрагентов', String(byCounterparty.size))
     + kpi('Средний платёж', totalCount ? fmtRub(totalSum/totalCount) : '—');
@@ -684,7 +939,7 @@ function renderLeaks(){
 function leakTable(map, label){
   const rows = Array.from(map.entries()).sort((a,b)=>b[1].sum-a[1].sum);
   let h = '<thead><tr><th class="rowlabel">'+label+'</th><th>Платежей</th><th>Сумма</th></tr></thead><tbody>';
-  if(!rows.length) h += '<tr class="empty-row"><td colspan="3">Нет нерелевантных оплат за период.</td></tr>';
+  if(!rows.length) h += '<tr class="empty-row"><td colspan="3">Нет оплат низкого приоритета за период.</td></tr>';
   rows.forEach(([key,v])=>{ h += '<tr><td class="rowlabel">'+esc(key)+'</td><td class="num">'+v.count+'</td><td class="num">'+fmtRub(v.sum)+'</td></tr>'; });
   h += '</tbody>';
   return h;
@@ -712,6 +967,18 @@ function balanceAtMatch(matchFn, asOf){
     sum += Number(ob.amount||0) - paymentsSumUpTo(ob.id, asOf);
   });
   return sum;
+}
+// Ручной оверрайд остатка на дату (pay_opening_balances) — используется вместо расчёта
+// по факту введённых обязательств, когда для даты+статьи (или "Итого", category=null)
+// известен реальный остаток заранее. category=null в оверрайде означает "Итого".
+function openingOverride(date, category){
+  const row = openingBalances.find(r=> r.as_of_date===date && (r.category||null)===(category||null));
+  return row ? Number(row.amount) : null;
+}
+function balanceWithOverride(date, category){
+  const ov = openingOverride(date, category);
+  if(ov!=null) return ov;
+  return category==null ? balanceAtMatch(()=>true, date) : balanceAtMatch(ob=>ob.category===category, date);
 }
 function renderDynamicsGroupTable(elId, rowLabel, groups){
   const months = monthEndsBack(6);
@@ -792,9 +1059,10 @@ document.getElementById('prioritiesTable').addEventListener('change', async e=>{
 });
 
 /* ---------- overview: structure + period comparison ---------- */
-function currentBalanceByCounterparty(){
+function currentBalanceByCounterparty(categoryFilter){
   const map = new Map();
   obligations.forEach(ob=>{
+    if(categoryFilter && ob.category!==categoryFilter) return;
     if(ob.status==='cancelled') return;
     const rem = remaining(ob);
     if(rem <= 0.5) return; // погашено — не в открытом остатке
@@ -803,25 +1071,46 @@ function currentBalanceByCounterparty(){
   });
   return map;
 }
-function renderStructureTable(elId, rowLabelHeader, rows, total){
+function renderStructureTable(elId, rowLabelHeader, rows, total, onRowClick){
   const sorted = rows.filter(r=>Math.abs(r.sum)>0.5).sort((a,b)=>b.sum-a.sum);
   let h = '<thead><tr><th class="rowlabel">'+esc(rowLabelHeader)+'</th><th>Открытый остаток</th><th>% от всех обязательств</th></tr></thead><tbody>';
   if(!sorted.length) h += '<tr class="empty-row"><td colspan="3">Открытых обязательств нет.</td></tr>';
   sorted.forEach(r=>{
     const pct = total ? (r.sum/total*100) : 0;
-    h += '<tr><td class="rowlabel">'+esc(r.label)+'</td><td class="num">'+fmtRub(r.sum)+'</td><td class="num">'+nf1.format(pct)+'%</td></tr>';
+    const labelCell = onRowClick ? '<span class="clickable structureDrillLink" data-label="'+esc(r.label)+'">'+esc(r.label)+'</span>' : esc(r.label);
+    h += '<tr><td class="rowlabel">'+labelCell+'</td><td class="num">'+fmtRub(r.sum)+'</td><td class="num">'+nf1.format(pct)+'%</td></tr>';
   });
   h += '</tbody>';
-  document.getElementById(elId).innerHTML = h;
+  const el = document.getElementById(elId);
+  el.innerHTML = h;
+  if(onRowClick) el.querySelectorAll('.structureDrillLink').forEach(node=> node.addEventListener('click', ()=> onRowClick(node.dataset.label)));
 }
-function counterpartyStructureTable(elId, map, limit){
+function counterpartyTableRows(map, limit){
   const rows = Array.from(map.entries()).sort((a,b)=>b[1].sum-a[1].sum).slice(0, limit||Infinity);
   let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Обязательств</th><th>Открытый остаток</th></tr></thead><tbody>';
   if(!rows.length) h += '<tr class="empty-row"><td colspan="3">Открытых обязательств нет.</td></tr>';
   rows.forEach(([key,v])=>{ h += '<tr><td class="rowlabel">'+esc(key)+'</td><td class="num">'+v.count+'</td><td class="num">'+fmtRub(v.sum)+'</td></tr>'; });
   h += '</tbody>';
-  document.getElementById(elId).innerHTML = h;
+  return h;
 }
+function counterpartyStructureTable(elId, map, limit){
+  document.getElementById(elId).innerHTML = counterpartyTableRows(map, limit);
+}
+let openOverviewCategory = null;
+function showCategoryDrilldown(category){
+  openOverviewCategory = (openOverviewCategory===category) ? null : category;
+  renderOverviewDrillBox();
+}
+function renderOverviewDrillBox(){
+  const box = document.getElementById('overviewDrillBox');
+  if(!openOverviewCategory){ box.innerHTML=''; return; }
+  box.innerHTML = '<div class="card" style="margin-top:10px;"><h2>Контрагенты по статье «'+esc(openOverviewCategory)+'»</h2>'
+    + '<div class="table-wrap"><table class="dt">'+counterpartyTableRows(currentBalanceByCounterparty(openOverviewCategory))+'</table></div>'
+    + '<button class="btn small" id="closeOverviewDrillBtn">Закрыть</button></div>';
+}
+document.getElementById('overviewDrillBox').addEventListener('click', e=>{
+  if(e.target.closest('#closeOverviewDrillBtn')){ openOverviewCategory=null; renderOverviewDrillBox(); }
+});
 function compareTable(elId, rowLabelHeader, rows){ // rows: [{label, from, to}], уже отсортированы вызывающим кодом
   let h = '<thead><tr><th class="rowlabel">'+esc(rowLabelHeader)+'</th><th>Было</th><th>Стало</th><th>Изменение</th></tr></thead><tbody>';
   if(!rows.length) h += '<tr class="empty-row"><td colspan="4">Нет данных за период.</td></tr>';
@@ -849,14 +1138,15 @@ function renderOverview(){
     + TIERS.map(t=> kpi(t.label, fmtRub(balanceAtMatch(ob=>ob.tier===t.key, today)))).join('');
 
   renderStructureTable('overviewTierTable', 'Тип платежа', TIERS.map(t=>({ label:t.label, sum: balanceAtMatch(ob=>ob.tier===t.key, today) })), totalNow);
-  renderStructureTable('overviewCategoryTable', 'Статья', categoryList.map(c=>({ label:c, sum: balanceAtMatch(ob=>ob.category===c, today) })), totalNow);
+  renderStructureTable('overviewCategoryTable', 'Статья', categoryList.map(c=>({ label:c, sum: balanceAtMatch(ob=>ob.category===c, today) })), totalNow, showCategoryDrilldown);
   counterpartyStructureTable('overviewCounterpartyTable', currentBalanceByCounterparty(), 10);
+  renderOverviewDrillBox();
 
   const fromEl = document.getElementById('compareFrom'), toEl = document.getElementById('compareTo');
   if(!toEl.value) toEl.value = today;
   if(!fromEl.value){ const d=new Date(); d.setDate(1); fromEl.value = d.toISOString().slice(0,10); }
   const from = fromEl.value, to = toEl.value;
-  const totalFrom = balanceAtMatch(()=>true, from), totalTo = balanceAtMatch(()=>true, to);
+  const totalFrom = balanceWithOverride(from, null), totalTo = balanceWithOverride(to, null);
   const deltaPctTxt = Math.abs(totalFrom) > 0.5 ? nf1.format((totalTo-totalFrom)/Math.abs(totalFrom)*100)+'%' : '—';
 
   document.getElementById('compareKpiRow').innerHTML =
@@ -868,12 +1158,166 @@ function renderOverview(){
   const tierRows = TIERS.map(t=>({ label:t.label, from: balanceAtMatch(ob=>ob.tier===t.key, from), to: balanceAtMatch(ob=>ob.tier===t.key, to) }));
   compareTable('compareTierTable', 'Тип платежа', tierRows);
 
-  const catRows = categoryList.map(c=>({ label:c, from: balanceAtMatch(ob=>ob.category===c, from), to: balanceAtMatch(ob=>ob.category===c, to) }))
+  const catRows = categoryList.map(c=>({ label:c, from: balanceWithOverride(from, c), to: balanceWithOverride(to, c) }))
     .sort((a,b)=> Math.abs((b.to-b.from)) - Math.abs((a.to-a.from)));
   compareTable('compareCategoryTable', 'Статья', catRows);
+
+  if(!document.getElementById('openingDate').value) document.getElementById('openingDate').value = from;
 }
 document.getElementById('compareFrom').addEventListener('change', renderOverview);
 document.getElementById('compareTo').addEventListener('change', renderOverview);
+document.getElementById('saveOpeningBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('openingStatus');
+  const as_of_date = document.getElementById('openingDate').value;
+  const category = document.getElementById('openingCategory').value || null;
+  const amount = Number(document.getElementById('openingAmount').value);
+  if(!as_of_date){ statusEl.textContent='Укажите дату.'; return; }
+  if(!isFinite(amount)){ statusEl.textContent='Укажите остаток.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  const existing = openingBalances.find(r=> r.as_of_date===as_of_date && (r.category||null)===category);
+  const payload = { as_of_date, category, amount, created_by: session.user.id, created_by_email: session.user.email };
+  const { error } = existing
+    ? await sb.from('pay_opening_balances').update(payload).eq('id', existing.id)
+    : await sb.from('pay_opening_balances').insert(payload);
+  if(error){ statusEl.textContent = 'Ошибка: '+error.message; return; }
+  statusEl.textContent = 'Сохранено.';
+  document.getElementById('openingAmount').value = '';
+  await loadAll();
+});
+
+/* ---------- budget ---------- */
+document.getElementById('budgetMonth').addEventListener('change', renderBudget);
+function currentBudgetMonthISO(){
+  const el = document.getElementById('budgetMonth');
+  if(!el.value){
+    const d = new Date();
+    el.value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  }
+  return el.value+'-01'; // period_month хранится как 1-е число месяца
+}
+function factForCategoryInMonth(category, periodMonthISO){
+  const d = new Date(periodMonthISO+'T00:00:00');
+  const start = periodMonthISO;
+  const end = new Date(d.getFullYear(), d.getMonth()+1, 0).toISOString().slice(0,10);
+  let sum = 0;
+  obligations.forEach(ob=>{
+    if(ob.category!==category) return;
+    (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
+      if(p.paid_at>=start && p.paid_at<=end) sum += Number(p.amount||0);
+    });
+  });
+  return sum;
+}
+function renderBudget(){
+  const periodMonth = currentBudgetMonthISO();
+  const lineByCategory = new Map(budgetLines.filter(l=>l.period_month===periodMonth).map(l=>[l.category,l]));
+
+  let totalOriginal=0, totalPlanned=0, totalFact=0;
+  let h = '<thead><tr><th class="rowlabel">Статья</th><th>Тип</th><th>Первоначальный план</th><th>Текущий план</th><th>Корректировка</th><th>Факт</th><th>Откл. факта от плана</th></tr></thead><tbody>';
+  categoryList.forEach(cat=>{
+    const line = lineByCategory.get(cat);
+    const fact = factForCategoryInMonth(cat, periodMonth);
+    totalFact += fact;
+    const tier = tierInfo(defaultTierForCategory(cat));
+    if(!line){
+      h += '<tr><td class="rowlabel">'+esc(cat)+'</td><td><span class="badge '+tier.badgeClass+'">'+esc(tier.label)+'</span></td>'
+         + '<td class="num">—</td>'
+         + '<td class="num"><input type="number" class="newBudgetAmount" data-category="'+esc(cat)+'" step="0.01" style="width:90px;"> <button class="btn small setBudgetBtn" data-category="'+esc(cat)+'">Задать план</button></td>'
+         + '<td class="num">—</td>'
+         + '<td class="num">'+fmtRub(fact)+'</td>'
+         + '<td class="num">—</td></tr>';
+      return;
+    }
+    totalOriginal += Number(line.original_amount);
+    totalPlanned += Number(line.planned_amount);
+    const delta = Number(line.planned_amount) - Number(line.original_amount);
+    const deltaCell = Math.abs(delta) > 0.5
+      ? '<span class="badge '+(delta>0?'st-critical':'st-good')+' clickable revisionToggle" data-line="'+line.id+'">'+(delta>0?'+':'')+fmtRub(delta)+'</span>'
+      : '<span class="badge st-none clickable revisionToggle" data-line="'+line.id+'">без корректировок</span>';
+    const factDelta = fact - Number(line.planned_amount);
+    h += '<tr><td class="rowlabel">'+esc(cat)+'</td><td><span class="badge '+tier.badgeClass+'">'+esc(tier.label)+'</span></td>'
+       + '<td class="num">'+fmtRub(line.original_amount)+'</td>'
+       + '<td class="num"><input type="number" class="budgetPlannedInput" data-line="'+line.id+'" step="0.01" style="width:90px;" value="'+Number(line.planned_amount).toFixed(2)+'"></td>'
+       + '<td class="num">'+deltaCell+'</td>'
+       + '<td class="num">'+fmtRub(fact)+'</td>'
+       + '<td class="num">'+(factDelta>=0?'+':'')+fmtRub(factDelta)+'</td></tr>';
+  });
+  h += '<tr class="total-row"><td class="rowlabel">Итого</td><td></td>'
+     + '<td class="num">'+fmtRub(totalOriginal)+'</td><td class="num">'+fmtRub(totalPlanned)+'</td>'
+     + '<td class="num">'+(totalPlanned-totalOriginal>=0?'+':'')+fmtRub(totalPlanned-totalOriginal)+'</td>'
+     + '<td class="num">'+fmtRub(totalFact)+'</td>'
+     + '<td class="num">'+(totalFact-totalPlanned>=0?'+':'')+fmtRub(totalFact-totalPlanned)+'</td></tr>';
+  h += '</tbody>';
+  document.getElementById('budgetTable').innerHTML = h;
+
+  document.getElementById('budgetKpiRow').innerHTML =
+      kpi('Первоначальный план', fmtRub(totalOriginal))
+    + kpi('Текущий план', fmtRub(totalPlanned), Math.abs(totalPlanned-totalOriginal)>0.5 ? 'корректировка: '+(totalPlanned-totalOriginal>=0?'+':'')+fmtRub(totalPlanned-totalOriginal) : '')
+    + kpi('Факт', fmtRub(totalFact))
+    + kpi('Откл. факта от плана', (totalFact-totalPlanned>=0?'+':'')+fmtRub(totalFact-totalPlanned));
+
+  renderBudgetRevisionBox();
+}
+function renderBudgetRevisionBox(){
+  const box = document.getElementById('budgetDrillBox');
+  if(!openBudgetRevisionsLineId){ box.innerHTML=''; return; }
+  const line = budgetLines.find(l=>l.id===openBudgetRevisionsLineId);
+  const revisions = budgetRevisionsByLine.get(openBudgetRevisionsLineId) || [];
+  if(!line){ box.innerHTML=''; return; }
+  let h = '<div class="card" style="margin-top:10px;"><h2>История корректировок «'+esc(line.category)+'»</h2>'
+        + '<div class="table-wrap"><table class="dt"><thead><tr><th>Когда</th><th>Кто</th><th>Было</th><th>Стало</th><th>Причина</th></tr></thead><tbody>';
+  if(!revisions.length) h += '<tr class="empty-row"><td colspan="5">Корректировок ещё не было.</td></tr>';
+  revisions.forEach(r=>{
+    h += '<tr><td>'+fmtDate(r.changed_at.slice(0,10))+'</td><td>'+esc(r.changed_by_email)+'</td>'
+       + '<td class="num">'+fmtRub(r.previous_amount)+'</td><td class="num">'+fmtRub(r.new_amount)+'</td>'
+       + '<td>'+esc(r.reason||'—')+'</td></tr>';
+  });
+  h += '</tbody></table></div><button class="btn small" id="closeBudgetRevisionsBtn">Закрыть</button></div>';
+  box.innerHTML = h;
+}
+document.getElementById('budgetDrillBox').addEventListener('click', e=>{
+  if(e.target.closest('#closeBudgetRevisionsBtn')){ openBudgetRevisionsLineId = null; renderBudgetRevisionBox(); }
+});
+document.getElementById('budgetTable').addEventListener('click', async e=>{
+  const setBtn = e.target.closest('.setBudgetBtn');
+  if(setBtn){
+    const category = setBtn.dataset.category;
+    const input = document.querySelector('.newBudgetAmount[data-category="'+CSS.escape(category)+'"]');
+    const amount = Number(input.value);
+    if(!amount || amount<=0) return;
+    const periodMonth = currentBudgetMonthISO();
+    const { data:{ session } } = await sb.auth.getSession();
+    const { error } = await sb.from('pay_budget_lines').insert({
+      period_month: periodMonth, category, original_amount: amount, planned_amount: amount,
+      created_by: session.user.id, created_by_email: session.user.email
+    });
+    if(error){ alert('Ошибка: '+error.message); return; }
+    await loadAll();
+    return;
+  }
+  const revToggle = e.target.closest('.revisionToggle');
+  if(revToggle){
+    openBudgetRevisionsLineId = (openBudgetRevisionsLineId===revToggle.dataset.line) ? null : revToggle.dataset.line;
+    renderBudgetRevisionBox();
+  }
+});
+document.getElementById('budgetTable').addEventListener('change', async e=>{
+  const input = e.target.closest('.budgetPlannedInput'); if(!input) return;
+  const lineId = input.dataset.line;
+  const line = budgetLines.find(l=>l.id===lineId);
+  const newAmount = Number(input.value);
+  if(!line || !isFinite(newAmount) || newAmount<0){ renderBudget(); return; }
+  if(Math.abs(newAmount - Number(line.planned_amount)) < 0.005) return;
+  const reason = prompt('Причина корректировки плана по статье «'+line.category+'» ('+fmtRub(line.planned_amount)+' → '+fmtRub(newAmount)+'):');
+  if(reason===null){ renderBudget(); return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  await sb.from('pay_budget_revisions').insert({
+    budget_line_id: lineId, previous_amount: line.planned_amount, new_amount: newAmount, reason: reason||null,
+    changed_by: session.user.id, changed_by_email: session.user.email
+  });
+  await sb.from('pay_budget_lines').update({ planned_amount: newAmount, updated_at: new Date().toISOString() }).eq('id', lineId);
+  await loadAll();
+});
 
 /* ---------- period summary ---------- */
 function periodBounds(type, refISO){
@@ -895,7 +1339,7 @@ function renderSummary(){
   if(!dateEl.value) dateEl.value = todayISO();
   const { start, end } = periodBounds(typeEl.value, dateEl.value);
 
-  const byTier = { base:0, growth:0, irrelevant:0 };
+  const byTier = {};
   const byCategory = new Map();
   let total = 0;
   obligations.forEach(ob=>{
@@ -911,9 +1355,7 @@ function renderSummary(){
 
   document.getElementById('summaryKpiRow').innerHTML =
       kpi('Период', fmtDate(start)+' — '+fmtDate(end), 'итого оплачено: '+fmtRub(total))
-    + kpi('Базовые', fmtRub(byTier.base))
-    + kpi('Рост', fmtRub(byTier.growth))
-    + kpi('Утечки (Нерелевантные)', fmtRub(byTier.irrelevant));
+    + TIERS.map(t=> kpi(t.label, fmtRub(byTier[t.key]||0))).join('');
 
   document.getElementById('summaryCategoryTable').innerHTML = leakTable(byCategory, 'Статья');
 }
