@@ -211,34 +211,65 @@ table.dt input[type=number]{width:80px;}
 
   <!-- ИМПОРТ -->
   <div class="tab-panel" id="panel-import">
+    <!-- Кредиторская задолженность -->
     <div class="card">
-      <h2>Импорт обязательств <span class="hint">файл или вставка из буфера — формат любой, колонки сопоставите на следующем шаге</span></h2>
-      <div class="field-row">
-        <label>Файл</label><input type="file" id="importFile" accept=".xlsx,.xls,.csv">
-        <span class="note" id="importFileStatus"></span>
-      </div>
-      <div class="note">Загрузите файл выгрузки из 1С/Excel (.xlsx, .xls или .csv) целиком — таблица разберётся сама. Либо, если удобнее без файла, скопируйте диапазон ячеек в Excel (Ctrl+C) и вставьте сюда:</div>
-      <div class="field-row">
-        <textarea id="importPaste" placeholder="Вставьте сюда (Ctrl+V), если не загружаете файл. Первая строка — заголовки." style="min-height:90px;"></textarea>
-      </div>
-      <div class="field-row">
-        <button class="btn primary" id="importParseBtn">Разобрать вставленное</button>
-        <span class="note" id="importParseStatus"></span>
+      <h2>Загрузить кредиторскую задолженность <span class="hint">обязательства перед контрагентами</span></h2>
+      <div class="field-row"><label>Файл</label><input type="file" id="impOblFile" accept=".xlsx,.xls,.csv"><span class="note" id="impOblFileStatus"></span></div>
+      <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
+      <div class="field-row"><textarea id="impOblPaste" style="min-height:70px;"></textarea></div>
+      <div class="field-row"><button class="btn" id="impOblParseBtn">Разобрать вставленное</button><span class="note" id="impOblParseStatus"></span></div>
+      <div id="impOblMapping" style="display:none;">
+        <div class="field-row" id="impOblMappingFields"></div>
+        <div class="note">Статья необязательна — без неё строки получат «Не распределено», проставите в «Реестре» вручную (там статья редактируется прямо в таблице).</div>
+        <div class="table-wrap" style="margin-top:10px;"><table class="dt" id="impOblPreview"></table></div>
+        <div class="field-row" style="margin-top:10px;"><button class="btn primary" id="impOblConfirmBtn">Импортировать</button><span class="note" id="impOblConfirmStatus"></span></div>
       </div>
     </div>
-    <div class="card" id="importMappingCard" style="display:none;">
-      <h2>Какая колонка за что отвечает</h2>
-      <div class="field-row">
-        <label>Контрагент *</label><select id="importColCounterparty"></select>
-        <label>Сумма *</label><select id="importColAmount"></select>
-        <label>Срок</label><select id="importColDueDate"></select>
-        <label>Статья</label><select id="importColCategory"></select>
+
+    <!-- Бюджет -->
+    <div class="card">
+      <h2>Загрузить бюджет <span class="hint">план по статьям на месяц — можно несколько строк на одну статью</span></h2>
+      <div class="field-row"><label>Месяц бюджета</label><input type="month" id="impBudMonth"></div>
+      <div class="field-row"><label>Файл</label><input type="file" id="impBudFile" accept=".xlsx,.xls,.csv"><span class="note" id="impBudFileStatus"></span></div>
+      <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
+      <div class="field-row"><textarea id="impBudPaste" style="min-height:70px;"></textarea></div>
+      <div class="field-row"><button class="btn" id="impBudParseBtn">Разобрать вставленное</button><span class="note" id="impBudParseStatus"></span></div>
+      <div id="impBudMapping" style="display:none;">
+        <div class="field-row" id="impBudMappingFields"></div>
+        <div class="note">Несколько строк с одной статьёй сложатся в план по этой статье; исходные строки будут видны при клике на статью в «Бюджете». «Приоритет» учитывается только для новых статей.</div>
+        <div id="impBudExtraArea"></div>
+        <div class="table-wrap" style="margin-top:10px;"><table class="dt" id="impBudPreview"></table></div>
+        <div class="field-row" style="margin-top:10px;"><button class="btn primary" id="impBudConfirmBtn">Импортировать</button><span class="note" id="impBudConfirmStatus"></span></div>
       </div>
-      <div class="note">Статья необязательна — если не сопоставить, все строки получат статью «Не распределено», и её нужно будет проставить в «Реестре» вручную (там статья редактируется прямо в таблице).</div>
-      <div class="table-wrap" style="margin-top:10px;"><table class="dt" id="importPreviewTable"></table></div>
-      <div class="field-row" style="margin-top:10px;">
-        <button class="btn primary" id="importConfirmBtn">Импортировать</button>
-        <span class="note" id="importConfirmStatus"></span>
+    </div>
+
+    <!-- Реестр платежей -->
+    <div class="card">
+      <h2>Загрузить реестр платежей <span class="hint">уже сделанные оплаты — попадут в историю сразу закрытыми</span></h2>
+      <div class="field-row"><label>Файл</label><input type="file" id="impPayFile" accept=".xlsx,.xls,.csv"><span class="note" id="impPayFileStatus"></span></div>
+      <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
+      <div class="field-row"><textarea id="impPayPaste" style="min-height:70px;"></textarea></div>
+      <div class="field-row"><button class="btn" id="impPayParseBtn">Разобрать вставленное</button><span class="note" id="impPayParseStatus"></span></div>
+      <div id="impPayMapping" style="display:none;">
+        <div class="field-row" id="impPayMappingFields"></div>
+        <div class="note">Каждая строка станет обязательством, сразу закрытым этой оплатой — так исторические платежи попадают в «Итоги периода», «Утечки» и «Динамику».</div>
+        <div class="table-wrap" style="margin-top:10px;"><table class="dt" id="impPayPreview"></table></div>
+        <div class="field-row" style="margin-top:10px;"><button class="btn primary" id="impPayConfirmBtn">Импортировать</button><span class="note" id="impPayConfirmStatus"></span></div>
+      </div>
+    </div>
+
+    <!-- Кассовая позиция -->
+    <div class="card">
+      <h2>Загрузить кассовую позицию по дням <span class="hint">остаток на начало дня + поступления, если ведёте отдельным файлом</span></h2>
+      <div class="field-row"><label>Файл</label><input type="file" id="impCashFile" accept=".xlsx,.xls,.csv"><span class="note" id="impCashFileStatus"></span></div>
+      <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
+      <div class="field-row"><textarea id="impCashPaste" style="min-height:70px;"></textarea></div>
+      <div class="field-row"><button class="btn" id="impCashParseBtn">Разобрать вставленное</button><span class="note" id="impCashParseStatus"></span></div>
+      <div id="impCashMapping" style="display:none;">
+        <div class="field-row" id="impCashMappingFields"></div>
+        <div class="note">Если на дату уже есть сохранённая кассовая позиция — значение обновится, а не задвоится.</div>
+        <div class="table-wrap" style="margin-top:10px;"><table class="dt" id="impCashPreview"></table></div>
+        <div class="field-row" style="margin-top:10px;"><button class="btn primary" id="impCashConfirmBtn">Импортировать</button><span class="note" id="impCashConfirmStatus"></span></div>
       </div>
     </div>
   </div>
@@ -488,6 +519,9 @@ async function loadAll(){
   const { data: budgetRevData } = await sb.from('pay_budget_revisions').select('*').order('changed_at',{ascending:false});
   budgetRevisionsByLine = new Map();
   (budgetRevData||[]).forEach(r=>{ if(!budgetRevisionsByLine.has(r.budget_line_id)) budgetRevisionsByLine.set(r.budget_line_id, []); budgetRevisionsByLine.get(r.budget_line_id).push(r); });
+  const { data: budgetItemData } = await sb.from('pay_budget_line_items').select('*').order('created_at',{ascending:true});
+  budgetLineItemsByLine = new Map();
+  (budgetItemData||[]).forEach(r=>{ if(!budgetLineItemsByLine.has(r.budget_line_id)) budgetLineItemsByLine.set(r.budget_line_id, []); budgetLineItemsByLine.get(r.budget_line_id).push(r); });
   renderActiveTab();
   updateApprovalBadge();
 }
@@ -589,7 +623,8 @@ function filteredObligations(){
   document.getElementById(id).addEventListener('change', renderRegistry);
 });
 let openPaymentsObligationId = null;
-let openBudgetRevisionsLineId = null;
+let openBudgetDrill = null; // { type: 'revisions'|'items', lineId } | null
+let budgetLineItemsByLine = new Map();
 function renderRegistry(){
   const rows = filteredObligations();
   const el = document.getElementById('registryTable');
@@ -754,10 +789,7 @@ document.getElementById('saveCashBtn').addEventListener('click', async ()=>{
   await loadAll();
 });
 
-/* ---------- import ---------- */
-let importHeaders = [];
-let importRows = [];
-let lastImportFilename = null;
+/* ---------- import: общий движок для 4 слотов загрузки ---------- */
 function parseImportAmount(s){
   if(s==null) return NaN;
   let v = String(s).replace(/[^\d,.\-]/g,'');
@@ -773,114 +805,291 @@ function parseImportDate(s){
   if(m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
   return null;
 }
-function finishImportParse(statusEl, sourceLabel){
-  if(importRows.length < 1){ statusEl.textContent='Не нашлось ни одной строки с данными (нужна строка заголовков и хотя бы одна строка после неё).'; return; }
-  statusEl.textContent = sourceLabel+' — разобрано строк: '+importRows.length;
-  populateImportMapping();
-  document.getElementById('importMappingCard').style.display = '';
+function parseImportTier(text){
+  if(!text) return null;
+  const t = String(text).trim().toLowerCase();
+  const found = TIERS.find(ti=> ti.key===t || ti.label.toLowerCase()===t || t.includes(ti.label.toLowerCase().split(' ')[0]));
+  return found ? found.key : null;
 }
-document.getElementById('importParseBtn').addEventListener('click', ()=>{
-  const statusEl = document.getElementById('importParseStatus');
-  const raw = document.getElementById('importPaste').value;
-  if(!raw.trim()){ statusEl.textContent='Вставьте данные.'; return; }
-  const lines = raw.split(/\r?\n/).filter(l=>l.trim().length);
-  if(lines.length < 2){ statusEl.textContent='Нужна хотя бы строка заголовков и одна строка данных.'; return; }
-  const delim = lines[0].includes('\t') ? '\t' : ',';
-  importHeaders = lines[0].split(delim).map(h=>h.trim());
-  importRows = lines.slice(1).map(line=> line.split(delim).map(c=>c.trim()));
-  lastImportFilename = null;
-  finishImportParse(statusEl, 'Вставлено из буфера');
-});
-document.getElementById('importFile').addEventListener('change', async e=>{
-  const statusEl = document.getElementById('importFileStatus');
-  const file = e.target.files[0];
-  if(!file) return;
-  statusEl.textContent = 'Читаю файл…';
-  try{
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type:'array' });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const grid = XLSX.utils.sheet_to_json(sheet, { header:1, raw:false, defval:'', blankrows:false });
-    if(grid.length < 2){ statusEl.textContent='В файле нет данных (нужна строка заголовков и хотя бы одна строка после неё).'; return; }
-    importHeaders = grid[0].map(h=>String(h).trim());
-    importRows = grid.slice(1).map(row=> importHeaders.map((_,i)=> String(row[i]!=null?row[i]:'').trim()));
-    lastImportFilename = file.name;
-    finishImportParse(statusEl, 'Файл «'+file.name+'» ('+wb.SheetNames[0]+')');
-  } catch(err){
-    statusEl.textContent = 'Не удалось прочитать файл: '+err.message;
+const IMPORT_TYPES = {
+  obl: {
+    prefix: 'impObl',
+    fields: [
+      {key:'counterparty', label:'Контрагент', required:true, guess:['контрагент','клиент','поставщик','наименование']},
+      {key:'amount', label:'Сумма', required:true, guess:['сумма','итого']},
+      {key:'due_date', label:'Срок', required:false, guess:['срок','дата']},
+      {key:'category', label:'Статья', required:false, guess:['статья','категория']}
+    ],
+    mappingNote: 'Статья необязательна — без неё строки получат «Не распределено», проставите в «Реестре» вручную (там статья редактируется прямо в таблице).'
+  },
+  bud: {
+    prefix: 'impBud',
+    fields: [
+      {key:'category', label:'Статья', required:true, guess:['статья','категория']},
+      {key:'amount', label:'Сумма', required:true, guess:['сумма','план','итого']},
+      {key:'label', label:'Описание/подпункт', required:false, guess:['описание','подпункт','позиция']},
+      {key:'tier', label:'Приоритет', required:false, guess:['приоритет','тип']}
+    ],
+    mappingNote: 'Несколько строк с одной статьёй сложатся в план по этой статье на выбранный месяц — исходные строки будут видны при клике на статью в «Бюджете». «Приоритет» учитывается только для новых статей (для уже существующих приоритет не трогается — меняйте на вкладке «Приоритеты статей»).'
+  },
+  pay: {
+    prefix: 'impPay',
+    fields: [
+      {key:'counterparty', label:'Контрагент', required:true, guess:['контрагент','клиент','поставщик','наименование']},
+      {key:'amount', label:'Сумма', required:true, guess:['сумма','итого']},
+      {key:'paid_at', label:'Дата платежа', required:true, guess:['дата','оплата','платеж']},
+      {key:'category', label:'Статья', required:false, guess:['статья','категория']}
+    ],
+    mappingNote: 'Каждая строка становится обязательством, сразу закрытым этой оплатой — так уже сделанные платежи попадают в «Итоги периода», «Утечки» и «Динамику».'
+  },
+  cash: {
+    prefix: 'impCash',
+    fields: [
+      {key:'position_date', label:'Дата', required:true, guess:['дата']},
+      {key:'opening_balance', label:'Остаток на начало дня', required:true, guess:['остаток','начало']},
+      {key:'prior_day_inflow', label:'Поступления', required:false, guess:['поступлен','приход']}
+    ],
+    mappingNote: 'Если на дату уже есть сохранённая кассовая позиция — значение обновится, а не задвоится.'
   }
-});
-function populateImportMapping(){
-  const opts = '<option value="">— не указано —</option>' + importHeaders.map((h,i)=>'<option value="'+i+'">'+esc(h)+'</option>').join('');
-  ['importColCounterparty','importColAmount','importColDueDate','importColCategory'].forEach(id=> document.getElementById(id).innerHTML = opts);
-  const guessIdx = patterns => importHeaders.findIndex(h=> patterns.some(p=> h.toLowerCase().includes(p)));
-  const setGuess = (id, patterns)=>{ const idx = guessIdx(patterns); if(idx>=0) document.getElementById(id).value = String(idx); };
-  setGuess('importColCounterparty', ['контрагент','клиент','поставщик','наименование']);
-  setGuess('importColAmount', ['сумма','итого']);
-  setGuess('importColDueDate', ['срок','дата']);
-  setGuess('importColCategory', ['статья','категория']);
-  renderImportPreview();
+};
+const importData = {};
+Object.keys(IMPORT_TYPES).forEach(k=> importData[k] = { headers:[], rows:[], filename:null });
+
+function importGridFromText(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim().length);
+  if(lines.length < 2) return null;
+  const delim = lines[0].includes('\t') ? '\t' : ',';
+  return { headers: lines[0].split(delim).map(h=>h.trim()), rows: lines.slice(1).map(line=> line.split(delim).map(c=>c.trim())) };
 }
-['importColCounterparty','importColAmount','importColDueDate','importColCategory'].forEach(id=>{
-  document.getElementById(id).addEventListener('change', renderImportPreview);
-});
-function renderImportPreview(){
-  const ci = document.getElementById('importColCounterparty').value;
-  const ai = document.getElementById('importColAmount').value;
-  const di = document.getElementById('importColDueDate').value;
-  const cai = document.getElementById('importColCategory').value;
-  let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Сумма</th><th>Срок</th><th>Статья</th></tr></thead><tbody>';
-  importRows.slice(0,20).forEach(row=>{
-    h += '<tr><td class="rowlabel">'+esc(ci!==''?row[ci]:'')+'</td>'
-       + '<td class="num">'+esc(ai!==''?row[ai]:'')+'</td>'
-       + '<td>'+esc(di!==''?row[di]:'')+'</td>'
-       + '<td>'+esc((cai!=='' && row[cai]) ? row[cai] : 'Не распределено')+'</td></tr>';
+async function importGridFromFile(file){
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type:'array' });
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const grid = XLSX.utils.sheet_to_json(sheet, { header:1, raw:false, defval:'', blankrows:false });
+  if(grid.length < 2) return null;
+  const headers = grid[0].map(h=>String(h).trim());
+  return { headers, rows: grid.slice(1).map(row=> headers.map((_,i)=> String(row[i]!=null?row[i]:'').trim())), sheetName: wb.SheetNames[0] };
+}
+function resetImportType(typeKey){
+  const p = IMPORT_TYPES[typeKey].prefix;
+  document.getElementById(p+'Paste').value = '';
+  document.getElementById(p+'File').value = '';
+  document.getElementById(p+'FileStatus').textContent = '';
+  document.getElementById(p+'Mapping').style.display = 'none';
+  importData[typeKey] = { headers:[], rows:[], filename:null };
+}
+function importMappingValues(typeKey){
+  const values = {};
+  document.querySelectorAll('.'+IMPORT_TYPES[typeKey].prefix+'FieldSelect').forEach(sel=> values[sel.dataset.key] = sel.value);
+  return values;
+}
+function renderImportMapping(typeKey){
+  const cfg = IMPORT_TYPES[typeKey], p = cfg.prefix, data = importData[typeKey];
+  const opts = '<option value="">— не указано —</option>' + data.headers.map((h,i)=>'<option value="'+i+'">'+esc(h)+'</option>').join('');
+  document.getElementById(p+'MappingFields').innerHTML = cfg.fields.map(f=>
+    '<label>'+esc(f.label)+(f.required?' *':'')+'</label><select class="'+p+'FieldSelect" data-key="'+f.key+'">'+opts+'</select>'
+  ).join('');
+  cfg.fields.forEach(f=>{
+    if(!f.guess) return;
+    const idx = data.headers.findIndex(h=> f.guess.some(g=> h.toLowerCase().includes(g)));
+    if(idx>=0){ const sel = document.querySelector('.'+p+'FieldSelect[data-key="'+f.key+'"]'); if(sel) sel.value = String(idx); }
+  });
+  document.querySelectorAll('.'+p+'FieldSelect').forEach(sel=> sel.addEventListener('change', ()=> renderImportPreview(typeKey)));
+  document.getElementById(p+'Mapping').style.display = '';
+  renderImportPreview(typeKey);
+}
+function renderImportPreview(typeKey){
+  const cfg = IMPORT_TYPES[typeKey], p = cfg.prefix, data = importData[typeKey], values = importMappingValues(typeKey);
+  let h = '<thead><tr>'+cfg.fields.map(f=>'<th>'+esc(f.label)+'</th>').join('')+'</tr></thead><tbody>';
+  data.rows.slice(0,20).forEach(row=>{
+    h += '<tr>'+cfg.fields.map(f=>{ const idx = values[f.key]; return '<td>'+esc(idx!==''&&idx!=null ? row[idx] : '')+'</td>'; }).join('')+'</tr>';
   });
   h += '</tbody>';
-  document.getElementById('importPreviewTable').innerHTML = h;
-  document.getElementById('importConfirmStatus').textContent = 'Строк для импорта: '+importRows.length+(importRows.length>20?' (показаны первые 20)':'');
+  document.getElementById(p+'Preview').innerHTML = h;
+  document.getElementById(p+'ConfirmStatus').textContent = 'Строк: '+data.rows.length+(data.rows.length>20?' (показаны первые 20)':'');
+  if(typeKey==='bud') renderBudgetImportCategoryMapping();
 }
-document.getElementById('importConfirmBtn').addEventListener('click', async ()=>{
-  const statusEl = document.getElementById('importConfirmStatus');
-  const ci = document.getElementById('importColCounterparty').value;
-  const ai = document.getElementById('importColAmount').value;
-  const di = document.getElementById('importColDueDate').value;
-  const cai = document.getElementById('importColCategory').value;
-  if(ci===''||ai===''){ statusEl.textContent='Сопоставьте хотя бы Контрагента и Сумму.'; return; }
-  const { data:{ session } } = await sb.auth.getSession();
+function wireImportType(typeKey){
+  const p = IMPORT_TYPES[typeKey].prefix;
+  document.getElementById(p+'ParseBtn').addEventListener('click', ()=>{
+    const statusEl = document.getElementById(p+'ParseStatus');
+    const raw = document.getElementById(p+'Paste').value;
+    if(!raw.trim()){ statusEl.textContent='Вставьте данные.'; return; }
+    const grid = importGridFromText(raw);
+    if(!grid){ statusEl.textContent='Нужна хотя бы строка заголовков и одна строка данных.'; return; }
+    importData[typeKey] = { headers:grid.headers, rows:grid.rows, filename:null };
+    statusEl.textContent = 'Вставлено из буфера — строк: '+grid.rows.length;
+    renderImportMapping(typeKey);
+  });
+  document.getElementById(p+'File').addEventListener('change', async e=>{
+    const statusEl = document.getElementById(p+'FileStatus');
+    const file = e.target.files[0];
+    if(!file) return;
+    statusEl.textContent = 'Читаю файл…';
+    try{
+      const grid = await importGridFromFile(file);
+      if(!grid){ statusEl.textContent='В файле нет данных.'; return; }
+      importData[typeKey] = { headers:grid.headers, rows:grid.rows, filename:file.name };
+      statusEl.textContent = 'Файл «'+file.name+'» ('+grid.sheetName+') — строк: '+grid.rows.length;
+      renderImportMapping(typeKey);
+    } catch(err){ statusEl.textContent = 'Не удалось прочитать файл: '+err.message; }
+  });
+}
+Object.keys(IMPORT_TYPES).forEach(wireImportType);
 
+/* ---------- import: кредиторская задолженность (обязательства) ---------- */
+document.getElementById('impOblConfirmBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('impOblConfirmStatus');
+  const values = importMappingValues('obl');
+  if(values.counterparty===''||values.amount===''){ statusEl.textContent='Сопоставьте хотя бы Контрагента и Сумму.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
   if(!categoryList.includes('Не распределено')){
     await sb.from('pay_category_priorities').insert({ category:'Не распределено', tier:'operational', updated_by: session.user.id, updated_by_email: session.user.email });
   }
-
   const { data: uploadRow, error: uploadErr } = await sb.from('pay_uploads')
-    .insert({ filename: lastImportFilename, period_label: todayISO(), uploaded_by: session.user.id, uploaded_by_email: session.user.email })
+    .insert({ filename: importData.obl.filename, period_label: todayISO(), uploaded_by: session.user.id, uploaded_by_email: session.user.email })
     .select().single();
   if(uploadErr){ statusEl.textContent = 'Ошибка: '+uploadErr.message; return; }
-
-  const rows = importRows.map(row=>{
-    const counterparty = (ci!==''?row[ci]:'').trim();
-    const amount = parseImportAmount(ai!==''?row[ai]:'');
-    const due_date = di!=='' ? parseImportDate(row[di]) : null;
-    const category = (cai!=='' && row[cai] && row[cai].trim()) ? row[cai].trim() : 'Не распределено';
+  const rows = importData.obl.rows.map(row=>{
+    const counterparty = (values.counterparty!==''?row[values.counterparty]:'').trim();
+    const amount = parseImportAmount(values.amount!==''?row[values.amount]:'');
+    const due_date = values.due_date!=='' ? parseImportDate(row[values.due_date]) : null;
+    const category = (values.category!=='' && row[values.category] && row[values.category].trim()) ? row[values.category].trim() : 'Не распределено';
     return { counterparty, amount, due_date, category };
   }).filter(r=> r.counterparty && isFinite(r.amount) && r.amount>0);
-
   if(!rows.length){ statusEl.textContent='Нет корректных строк для импорта (проверьте сопоставление колонок и формат сумм).'; return; }
-
-  const inserts = rows.map(r=> ({
-    counterparty: r.counterparty, amount: r.amount, due_date: r.due_date, category: r.category,
+  const inserts = rows.map(r=>({ counterparty:r.counterparty, amount:r.amount, due_date:r.due_date, category:r.category,
     tier: defaultTierForCategory(r.category), source:'upload', upload_batch_id: uploadRow.id,
-    created_by: session.user.id, created_by_email: session.user.email
-  }));
+    created_by: session.user.id, created_by_email: session.user.email }));
   const { error } = await sb.from('pay_obligations').insert(inserts);
   if(error){ statusEl.textContent = 'Ошибка: '+error.message; return; }
   statusEl.textContent = 'Импортировано: '+inserts.length+'.';
-  document.getElementById('importPaste').value = '';
-  document.getElementById('importFile').value = '';
-  document.getElementById('importFileStatus').textContent = '';
-  document.getElementById('importMappingCard').style.display = 'none';
-  importRows = []; importHeaders = []; lastImportFilename = null;
+  resetImportType('obl');
+  await loadAll();
+});
+
+/* ---------- import: реестр платежей (факт) ---------- */
+document.getElementById('impPayConfirmBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('impPayConfirmStatus');
+  const values = importMappingValues('pay');
+  if(values.counterparty===''||values.amount===''||values.paid_at===''){ statusEl.textContent='Сопоставьте Контрагента, Сумму и Дату платежа.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!categoryList.includes('Не распределено')){
+    await sb.from('pay_category_priorities').insert({ category:'Не распределено', tier:'operational', updated_by: session.user.id, updated_by_email: session.user.email });
+  }
+  const rows = importData.pay.rows.map(row=>{
+    const counterparty = row[values.counterparty].trim();
+    const amount = parseImportAmount(row[values.amount]);
+    const paid_at = parseImportDate(row[values.paid_at]);
+    const category = (values.category!=='' && row[values.category] && row[values.category].trim()) ? row[values.category].trim() : 'Не распределено';
+    return { counterparty, amount, paid_at, category };
+  }).filter(r=> r.counterparty && isFinite(r.amount) && r.amount>0 && r.paid_at);
+  if(!rows.length){ statusEl.textContent='Нет корректных строк (проверьте сопоставление и формат даты платежа — ГГГГ-ММ-ДД или ДД.ММ.ГГГГ).'; return; }
+  const obInserts = rows.map(r=>({ counterparty:r.counterparty, amount:r.amount, category:r.category, tier: defaultTierForCategory(r.category),
+    due_date:r.paid_at, source:'upload', created_by: session.user.id, created_by_email: session.user.email }));
+  const { data: obRows, error: obErr } = await sb.from('pay_obligations').insert(obInserts).select();
+  if(obErr || !obRows){ statusEl.textContent = 'Ошибка: '+(obErr?obErr.message:'не удалось создать обязательства'); return; }
+  const payInserts = obRows.map((obRow,i)=>({ obligation_id: obRow.id, amount: rows[i].amount, paid_at: rows[i].paid_at, paid_by: session.user.id, paid_by_email: session.user.email }));
+  const { error: payErr } = await sb.from('pay_payments').insert(payInserts);
+  statusEl.textContent = payErr ? ('Обязательства созданы, но платежи не сохранились: '+payErr.message) : ('Импортировано платежей: '+obRows.length+'.');
+  resetImportType('pay');
+  await loadAll();
+});
+
+/* ---------- import: кассовая позиция по дням ---------- */
+document.getElementById('impCashConfirmBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('impCashConfirmStatus');
+  const values = importMappingValues('cash');
+  if(values.position_date===''||values.opening_balance===''){ statusEl.textContent='Сопоставьте Дату и Остаток на начало дня.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  const rows = importData.cash.rows.map(row=>{
+    const position_date = parseImportDate(row[values.position_date]);
+    const opening_balance = parseImportAmount(row[values.opening_balance]);
+    const prior_day_inflow = values.prior_day_inflow!=='' ? parseImportAmount(row[values.prior_day_inflow]) : 0;
+    return { position_date, opening_balance, prior_day_inflow: isFinite(prior_day_inflow)?prior_day_inflow:0 };
+  }).filter(r=> r.position_date && isFinite(r.opening_balance));
+  if(!rows.length){ statusEl.textContent='Нет корректных строк (проверьте формат дат и сумм).'; return; }
+  let okCount=0;
+  for(const r of rows){
+    const existing = cashPositions.find(p=>p.position_date===r.position_date);
+    const payload = { position_date:r.position_date, opening_balance:r.opening_balance, prior_day_inflow:r.prior_day_inflow, created_by: session.user.id, created_by_email: session.user.email };
+    const { error } = existing
+      ? await sb.from('pay_cash_positions').update(payload).eq('id', existing.id)
+      : await sb.from('pay_cash_positions').insert(payload);
+    if(!error) okCount++;
+  }
+  statusEl.textContent = 'Сохранено дней: '+okCount+' из '+rows.length+'.';
+  resetImportType('cash');
+  await loadAll();
+});
+
+/* ---------- import: бюджет (группировка по статьям + переименование) ---------- */
+async function renameCategory(oldName, newName){
+  if(!oldName || oldName===newName) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  const tier = categoryPriority.get(oldName) || 'operational';
+  await sb.from('pay_category_priorities').upsert({ category:newName, tier, updated_by:session.user.id, updated_by_email:session.user.email }, { onConflict:'category' });
+  await sb.from('pay_obligations').update({ category:newName }).eq('category', oldName);
+  await sb.from('pay_budget_lines').update({ category:newName }).eq('category', oldName); // может не пройти при совпадении месяца — не критично, статья всё равно переименована
+  await sb.from('pay_category_priorities').delete().eq('category', oldName);
+}
+function renderBudgetImportCategoryMapping(){
+  const values = importMappingValues('bud');
+  const area = document.getElementById('impBudExtraArea');
+  if(values.category===''){ area.innerHTML=''; return; }
+  const names = Array.from(new Set(importData.bud.rows.map(row=> (row[values.category]||'').trim()).filter(Boolean)));
+  const unmatched = names.filter(n=> !categoryList.includes(n));
+  if(!unmatched.length){ area.innerHTML = ''; return; }
+  let h = '<div class="note">В файле есть статьи, которых нет в справочнике — для каждой укажите, создать новую или переименовать существующую в это название (переименование применится везде — в обязательствах, бюджете и справочнике):</div>';
+  unmatched.forEach(name=>{
+    const opts = '<option value="">создать как новую статью</option>' + categoryList.map(c=>'<option value="'+esc(c)+'">переименовать «'+esc(c)+'» в это</option>').join('');
+    h += '<div class="field-row"><label>«'+esc(name)+'»</label><select class="budCategoryRenameSelect" data-newname="'+esc(name)+'">'+opts+'</select></div>';
+  });
+  area.innerHTML = h;
+}
+document.getElementById('impBudConfirmBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('impBudConfirmStatus');
+  const values = importMappingValues('bud');
+  if(values.category===''||values.amount===''){ statusEl.textContent='Сопоставьте Статью и Сумму.'; return; }
+  const monthEl = document.getElementById('impBudMonth');
+  if(!monthEl.value){ statusEl.textContent='Укажите месяц бюджета.'; return; }
+  const periodMonth = monthEl.value+'-01';
+  const { data:{ session } } = await sb.auth.getSession();
+
+  const renameSelects = document.querySelectorAll('.budCategoryRenameSelect');
+  for(const sel of renameSelects){ if(sel.value) await renameCategory(sel.value, sel.dataset.newname); }
+  await loadAll();
+
+  const groups = new Map();
+  importData.bud.rows.forEach(row=>{
+    const category = (row[values.category]||'').trim();
+    const amount = parseImportAmount(row[values.amount]);
+    if(!category || !isFinite(amount)) return;
+    const label = values.label!=='' ? (row[values.label]||'').trim() : '';
+    const tier = values.tier!=='' ? parseImportTier(row[values.tier]) : null;
+    if(!groups.has(category)) groups.set(category, { sum:0, items:[], tier:null });
+    const g = groups.get(category);
+    g.sum += amount; g.items.push({ label, amount }); if(tier) g.tier = tier;
+  });
+  if(!groups.size){ statusEl.textContent='Нет корректных строк (проверьте сопоставление и формат сумм).'; return; }
+
+  let created=0, skipped=0;
+  for(const [category, g] of groups.entries()){
+    if(!categoryList.includes(category)){
+      await sb.from('pay_category_priorities').insert({ category, tier: g.tier||'operational', updated_by:session.user.id, updated_by_email:session.user.email });
+    }
+    if(budgetLines.find(l=>l.period_month===periodMonth && l.category===category)){ skipped++; continue; }
+    const { data: lineRow, error: lineErr } = await sb.from('pay_budget_lines').insert({
+      period_month: periodMonth, category, original_amount: g.sum, planned_amount: g.sum,
+      created_by: session.user.id, created_by_email: session.user.email
+    }).select().single();
+    if(lineErr || !lineRow) continue;
+    created++;
+    const itemInserts = g.items.map((it,i)=>({ budget_line_id: lineRow.id, label: it.label || ('Позиция '+(i+1)), amount: it.amount, created_by:session.user.id, created_by_email:session.user.email }));
+    await sb.from('pay_budget_line_items').insert(itemInserts);
+  }
+  statusEl.textContent = 'Создано статей бюджета: '+created+(skipped?(', уже был план на месяц (пропущено): '+skipped):'')+'.';
+  resetImportType('bud');
   await loadAll();
 });
 
@@ -1049,7 +1258,7 @@ function renderPriorities(){
     h += '<tr><td class="rowlabel">'+esc(cat)+'</td>'
        + '<td><select class="priorityTierSelect" data-category="'+esc(cat)+'">'+opts+'</select> <span class="note priorityStatus" data-category="'+esc(cat)+'"></span></td>'
        + '<td class="num">'+used+'</td>'
-       + '<td><button class="btn small deleteCategoryBtn" data-category="'+esc(cat)+'">Удалить</button></td></tr>';
+       + '<td><button class="btn small renameCategoryBtn" data-category="'+esc(cat)+'">Переименовать</button> <button class="btn small deleteCategoryBtn" data-category="'+esc(cat)+'">Удалить</button></td></tr>';
   });
   h += '</tbody>';
   el.innerHTML = h;
@@ -1069,6 +1278,17 @@ document.getElementById('addCategoryBtn').addEventListener('click', async ()=>{
   populateSelects();
 });
 document.getElementById('prioritiesTable').addEventListener('click', async e=>{
+  const renameBtn = e.target.closest('.renameCategoryBtn');
+  if(renameBtn){
+    const oldName = renameBtn.dataset.category;
+    const newName = (prompt('Новое название для статьи «'+oldName+'»:', oldName)||'').trim();
+    if(!newName || newName===oldName) return;
+    if(categoryList.includes(newName)){ alert('Статья «'+newName+'» уже существует — используйте другое название или удалите одну из них.'); return; }
+    await renameCategory(oldName, newName);
+    await loadAll();
+    populateSelects();
+    return;
+  }
   const delBtn = e.target.closest('.deleteCategoryBtn'); if(!delBtn) return;
   const cat = delBtn.dataset.category;
   const used = obligations.filter(ob=>ob.category===cat).length;
@@ -1268,7 +1488,11 @@ function renderBudget(){
       ? '<span class="badge '+(delta>0?'st-critical':'st-good')+' clickable revisionToggle" data-line="'+line.id+'">'+(delta>0?'+':'')+fmtRub(delta)+'</span>'
       : '<span class="badge st-none clickable revisionToggle" data-line="'+line.id+'">без корректировок</span>';
     const factDelta = fact - Number(line.planned_amount);
-    h += '<tr><td class="rowlabel">'+esc(cat)+'</td><td><span class="badge '+tier.badgeClass+'">'+esc(tier.label)+'</span></td>'
+    const itemCount = (budgetLineItemsByLine.get(line.id)||[]).length;
+    const catCell = itemCount
+      ? '<span class="clickable itemsToggle" data-line="'+line.id+'">'+esc(cat)+' <span class="note">('+itemCount+' поз.)</span></span>'
+      : esc(cat);
+    h += '<tr><td class="rowlabel">'+catCell+'</td><td><span class="badge '+tier.badgeClass+'">'+esc(tier.label)+'</span></td>'
        + '<td class="num">'+fmtRub(line.original_amount)+'</td>'
        + '<td class="num"><input type="number" class="budgetPlannedInput" data-line="'+line.id+'" step="0.01" style="width:90px;" value="'+Number(line.planned_amount).toFixed(2)+'"></td>'
        + '<td class="num">'+deltaCell+'</td>'
@@ -1289,27 +1513,37 @@ function renderBudget(){
     + kpi('Факт', fmtRub(totalFact))
     + kpi('Откл. факта от плана', (totalFact-totalPlanned>=0?'+':'')+fmtRub(totalFact-totalPlanned));
 
-  renderBudgetRevisionBox();
+  renderBudgetDrillBox();
 }
-function renderBudgetRevisionBox(){
+function renderBudgetDrillBox(){
   const box = document.getElementById('budgetDrillBox');
-  if(!openBudgetRevisionsLineId){ box.innerHTML=''; return; }
-  const line = budgetLines.find(l=>l.id===openBudgetRevisionsLineId);
-  const revisions = budgetRevisionsByLine.get(openBudgetRevisionsLineId) || [];
+  if(!openBudgetDrill){ box.innerHTML=''; return; }
+  const line = budgetLines.find(l=>l.id===openBudgetDrill.lineId);
   if(!line){ box.innerHTML=''; return; }
-  let h = '<div class="card" style="margin-top:10px;"><h2>История корректировок «'+esc(line.category)+'»</h2>'
-        + '<div class="table-wrap"><table class="dt"><thead><tr><th>Когда</th><th>Кто</th><th>Было</th><th>Стало</th><th>Причина</th></tr></thead><tbody>';
-  if(!revisions.length) h += '<tr class="empty-row"><td colspan="5">Корректировок ещё не было.</td></tr>';
-  revisions.forEach(r=>{
-    h += '<tr><td>'+fmtDate(r.changed_at.slice(0,10))+'</td><td>'+esc(r.changed_by_email)+'</td>'
-       + '<td class="num">'+fmtRub(r.previous_amount)+'</td><td class="num">'+fmtRub(r.new_amount)+'</td>'
-       + '<td>'+esc(r.reason||'—')+'</td></tr>';
-  });
-  h += '</tbody></table></div><button class="btn small" id="closeBudgetRevisionsBtn">Закрыть</button></div>';
+  let h;
+  if(openBudgetDrill.type==='revisions'){
+    const revisions = budgetRevisionsByLine.get(line.id) || [];
+    h = '<div class="card" style="margin-top:10px;"><h2>История корректировок «'+esc(line.category)+'»</h2>'
+      + '<div class="table-wrap"><table class="dt"><thead><tr><th>Когда</th><th>Кто</th><th>Было</th><th>Стало</th><th>Причина</th></tr></thead><tbody>';
+    if(!revisions.length) h += '<tr class="empty-row"><td colspan="5">Корректировок ещё не было.</td></tr>';
+    revisions.forEach(r=>{
+      h += '<tr><td>'+fmtDate(r.changed_at.slice(0,10))+'</td><td>'+esc(r.changed_by_email)+'</td>'
+         + '<td class="num">'+fmtRub(r.previous_amount)+'</td><td class="num">'+fmtRub(r.new_amount)+'</td>'
+         + '<td>'+esc(r.reason||'—')+'</td></tr>';
+    });
+    h += '</tbody></table></div><button class="btn small" id="closeBudgetDrillBtn">Закрыть</button></div>';
+  } else {
+    const items = budgetLineItemsByLine.get(line.id) || [];
+    h = '<div class="card" style="margin-top:10px;"><h2>Позиции статьи «'+esc(line.category)+'» <span class="hint">из импорта бюджета</span></h2>'
+      + '<div class="table-wrap"><table class="dt"><thead><tr><th class="rowlabel">Описание</th><th>Сумма</th></tr></thead><tbody>';
+    if(!items.length) h += '<tr class="empty-row"><td colspan="2">Позиций нет.</td></tr>';
+    items.forEach(it=> h += '<tr><td class="rowlabel">'+esc(it.label||'—')+'</td><td class="num">'+fmtRub(it.amount)+'</td></tr>');
+    h += '</tbody></table></div><button class="btn small" id="closeBudgetDrillBtn">Закрыть</button></div>';
+  }
   box.innerHTML = h;
 }
 document.getElementById('budgetDrillBox').addEventListener('click', e=>{
-  if(e.target.closest('#closeBudgetRevisionsBtn')){ openBudgetRevisionsLineId = null; renderBudgetRevisionBox(); }
+  if(e.target.closest('#closeBudgetDrillBtn')){ openBudgetDrill = null; renderBudgetDrillBox(); }
 });
 document.getElementById('budgetTable').addEventListener('click', async e=>{
   const setBtn = e.target.closest('.setBudgetBtn');
@@ -1330,8 +1564,16 @@ document.getElementById('budgetTable').addEventListener('click', async e=>{
   }
   const revToggle = e.target.closest('.revisionToggle');
   if(revToggle){
-    openBudgetRevisionsLineId = (openBudgetRevisionsLineId===revToggle.dataset.line) ? null : revToggle.dataset.line;
-    renderBudgetRevisionBox();
+    const lineId = revToggle.dataset.line;
+    openBudgetDrill = (openBudgetDrill && openBudgetDrill.type==='revisions' && openBudgetDrill.lineId===lineId) ? null : {type:'revisions', lineId};
+    renderBudgetDrillBox();
+    return;
+  }
+  const itemsToggle = e.target.closest('.itemsToggle');
+  if(itemsToggle){
+    const lineId = itemsToggle.dataset.line;
+    openBudgetDrill = (openBudgetDrill && openBudgetDrill.type==='items' && openBudgetDrill.lineId===lineId) ? null : {type:'items', lineId};
+    renderBudgetDrillBox();
   }
 });
 document.getElementById('budgetTable').addEventListener('change', async e=>{
