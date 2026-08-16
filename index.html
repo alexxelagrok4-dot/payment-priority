@@ -111,6 +111,8 @@ table.dt td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;t
 table.dt td.due-now{color:var(--critical);font-weight:600;}
 table.dt input[type=number]{width:80px;}
 .empty-row td{color:var(--ink-muted);font-style:italic;text-align:center;}
+.clickable{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;}
+.clickable:hover{color:var(--accent);}
 </style>
 
 <div id="authScreen" class="auth-screen">
@@ -188,6 +190,7 @@ table.dt input[type=number]{width:80px;}
         <label>Поиск</label><input type="text" id="filterSearch" placeholder="контрагент" style="width:160px;">
       </div>
       <div class="table-wrap"><table class="dt" id="registryTable"></table></div>
+      <div id="registryDrillBox"></div>
     </div>
   </div>
 
@@ -276,9 +279,18 @@ table.dt input[type=number]{width:80px;}
   <!-- ПРИОРИТЕТЫ СТАТЕЙ -->
   <div class="tab-panel" id="panel-priorities">
     <div class="card">
+      <h2>Новая статья</h2>
+      <div class="field-row">
+        <label>Название</label><input type="text" id="newCategoryName" placeholder="например, Страхование" style="width:240px;">
+        <label>Приоритет</label><select id="newCategoryTier"></select>
+        <button class="btn primary" id="addCategoryBtn">Добавить</button>
+        <span class="note" id="addCategoryStatus"></span>
+      </div>
+    </div>
+    <div class="card">
       <h2>Приоритет по статье <span class="hint">проставляется автоматически при выборе статьи в форме ввода</span></h2>
       <div class="table-wrap"><table class="dt" id="prioritiesTable"></table></div>
-      <div class="note">Меняется здесь один раз для всей статьи — дальше при добавлении обязательства тип подставляется сам. Для конкретного платежа тип всё равно можно поменять вручную в форме ввода.</div>
+      <div class="note">Приоритет меняется здесь один раз для всей статьи — дальше при добавлении обязательства тип подставляется сам (для конкретного платежа его всё равно можно поменять вручную в форме ввода). Удаление статьи убирает её только из списка для новых обязательств — уже созданные обязательства с этой статьёй остаются как есть.</div>
     </div>
   </div>
 
@@ -329,18 +341,6 @@ const SUPABASE_URL = "https://khzxfhxpcrjshsssghok.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_rrwlI1VXeWmQJ1Zn3YT3Ow_pUK04-ha";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const CATEGORIES = [
-  "Поставщики оборудования",
-  "Поставщики транспорта",
-  "Налоговая",
-  "Залоги клиентам",
-  "Аренда и инфраструктура",
-  "Зарплата и ФОТ",
-  "Наём и расширение штата",
-  "Кредиты и займы",
-  "Прочее"
-];
-
 const TIERS = [
   { key:'base', label:'Базовые', hint:'без этого бизнес останавливается', badgeClass:'st-critical' },
   { key:'growth', label:'Рост', hint:'наём персонала, оборудование для аренды — инвестиции в рост', badgeClass:'st-warn' },
@@ -348,21 +348,12 @@ const TIERS = [
 ];
 function tierInfo(key){ return TIERS.find(t=>t.key===key) || TIERS[0]; }
 
-// Приоритет по умолчанию для статьи, пока в справочнике pay_category_priorities
-// нет своей настройки — стартовая гипотеза, редактируется на вкладке «Приоритеты статей».
-const CATEGORY_DEFAULT_TIER = {
-  "Поставщики оборудования": "growth",   // покупка оборудования для аренды — инвестиция в рост
-  "Поставщики транспорта": "base",
-  "Налоговая": "base",
-  "Залоги клиентам": "base",
-  "Аренда и инфраструктура": "base",
-  "Зарплата и ФОТ": "base",
-  "Наём и расширение штата": "growth",
-  "Кредиты и займы": "base",
-  "Прочее": "irrelevant"
-};
-let categoryPriority = new Map(); // category -> tier, loaded from pay_category_priorities (overrides CATEGORY_DEFAULT_TIER)
-function defaultTierForCategory(cat){ return categoryPriority.get(cat) || CATEGORY_DEFAULT_TIER[cat] || 'base'; }
+// Список статей — не захардкожен: живёт целиком в pay_category_priorities (категория
+// + приоритет по умолчанию), редактируется на вкладке «Приоритеты статей». categoryList
+// и categoryPriority заполняются из одного и того же запроса в loadAll().
+let categoryList = [];
+let categoryPriority = new Map(); // category -> tier
+function defaultTierForCategory(cat){ return categoryPriority.get(cat) || 'base'; }
 
 const nf0 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
 const nf1 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:1});
@@ -407,7 +398,8 @@ async function loadAll(){
   const { data: payData } = await sb.from('pay_payments').select('*').order('paid_at',{ascending:true});
   paymentsByObligation = new Map();
   (payData||[]).forEach(p=>{ if(!paymentsByObligation.has(p.obligation_id)) paymentsByObligation.set(p.obligation_id, []); paymentsByObligation.get(p.obligation_id).push(p); });
-  const { data: prData } = await sb.from('pay_category_priorities').select('*');
+  const { data: prData } = await sb.from('pay_category_priorities').select('*').order('category',{ascending:true});
+  categoryList = (prData||[]).map(r=>r.category);
   categoryPriority = new Map((prData||[]).map(r=>[r.category, r.tier]));
   renderActiveTab();
   updateApprovalBadge();
@@ -445,12 +437,13 @@ function renderActiveTab(){
 
 /* ---------- add obligation ---------- */
 function populateSelects(){
-  const catOpts = CATEGORIES.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  const catOpts = categoryList.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
   document.getElementById('newCategory').innerHTML = catOpts;
   document.getElementById('filterCategory').innerHTML = '<option value="">Все</option>'+catOpts;
   const tierOpts = TIERS.map(t=>'<option value="'+t.key+'">'+esc(t.label)+'</option>').join('');
   document.getElementById('newTier').innerHTML = tierOpts;
   document.getElementById('filterTier').innerHTML = '<option value="">Все</option>'+tierOpts;
+  document.getElementById('newCategoryTier').innerHTML = tierOpts;
   applyDefaultTier();
 }
 function applyDefaultTier(){
@@ -506,6 +499,7 @@ function filteredObligations(){
   document.getElementById(id).addEventListener('input', renderRegistry);
   document.getElementById(id).addEventListener('change', renderRegistry);
 });
+let openPaymentsObligationId = null;
 function renderRegistry(){
   const rows = filteredObligations();
   const el = document.getElementById('registryTable');
@@ -514,12 +508,15 @@ function renderRegistry(){
   rows.forEach(ob=>{
     const s = effectiveStatus(ob);
     const rem = remaining(ob);
+    const paidCount = (paymentsByObligation.get(ob.id)||[]).length;
     h += '<tr>'
        + '<td class="rowlabel">'+esc(ob.counterparty)+(ob.note?'<div class="note">'+esc(ob.note)+'</div>':'')+'</td>'
        + '<td>'+esc(ob.category)+'</td>'
        + '<td>'+tierBadge(ob)+'</td>'
        + '<td class="num">'+fmtRub(ob.amount)+'</td>'
-       + '<td class="num">'+fmtRub(rem)+'</td>'
+       + '<td class="num">'+fmtRub(rem)
+         +(paidCount?'<div class="note clickable showPaymentsLink" data-id="'+ob.id+'">оплат: '+paidCount+' — показать/удалить</div>':'')
+         +'</td>'
        + '<td>'+fmtDate(ob.due_date)+'</td>'
        + '<td>'+statusBadge(s)+'</td>'
        + '<td>'+approvalBadge(ob)+'</td>'
@@ -528,6 +525,23 @@ function renderRegistry(){
   });
   h += '</tbody>';
   el.innerHTML = h;
+  renderPaymentHistory();
+}
+function renderPaymentHistory(){
+  const box = document.getElementById('registryDrillBox');
+  if(!openPaymentsObligationId){ box.innerHTML=''; return; }
+  const ob = obligations.find(o=>o.id===openPaymentsObligationId);
+  const payments = (paymentsByObligation.get(openPaymentsObligationId)||[]).slice().sort((a,b)=> a.paid_at < b.paid_at ? -1 : 1);
+  if(!ob){ box.innerHTML=''; return; }
+  let h = '<div class="card" style="margin-top:10px;"><h2>Оплаты по «'+esc(ob.counterparty)+'» <span class="hint">'+esc(ob.category)+'</span></h2>'
+        + '<div class="table-wrap"><table class="dt"><thead><tr><th>Дата</th><th>Сумма</th><th>Кто</th><th></th></tr></thead><tbody>';
+  if(!payments.length) h += '<tr class="empty-row"><td colspan="4">Оплат нет.</td></tr>';
+  payments.forEach(p=>{
+    h += '<tr><td>'+fmtDate(p.paid_at)+'</td><td class="num">'+fmtRub(p.amount)+'</td><td>'+esc(p.paid_by_email)+'</td>'
+       + '<td><button class="btn small deletePaymentBtn" data-id="'+p.id+'">Удалить</button></td></tr>';
+  });
+  h += '</tbody></table></div><button class="btn small" id="closePaymentsBtn">Закрыть</button></div>';
+  box.innerHTML = h;
 }
 function actionsCell(ob,s,rem){
   if(s==='cancelled') return '<button class="btn small reopenBtn" data-id="'+ob.id+'">Вернуть</button>';
@@ -537,6 +551,12 @@ function actionsCell(ob,s,rem){
        + '<button class="btn small cancelBtn" data-id="'+ob.id+'">Отменить</button>';
 }
 document.getElementById('registryTable').addEventListener('click', async e=>{
+  const showPaymentsLink = e.target.closest('.showPaymentsLink');
+  if(showPaymentsLink){
+    openPaymentsObligationId = showPaymentsLink.dataset.id;
+    renderPaymentHistory();
+    return;
+  }
   const { data:{ session } } = await sb.auth.getSession();
   const payBtn = e.target.closest('.payBtn');
   if(payBtn){
@@ -559,6 +579,15 @@ document.getElementById('registryTable').addEventListener('click', async e=>{
     await sb.from('pay_obligations').update({status:'open', updated_at: new Date().toISOString()}).eq('id', reopenBtn.dataset.id);
     await loadAll();
     return;
+  }
+});
+document.getElementById('registryDrillBox').addEventListener('click', async e=>{
+  if(e.target.closest('#closePaymentsBtn')){ openPaymentsObligationId = null; renderPaymentHistory(); return; }
+  const delBtn = e.target.closest('.deletePaymentBtn');
+  if(delBtn){
+    if(!confirm('Удалить эту оплату?')) return;
+    await sb.from('pay_payments').delete().eq('id', delBtn.dataset.id);
+    await loadAll();
   }
 });
 
@@ -682,7 +711,7 @@ function renderDynamicsGroupTable(elId, rowLabel, groups){
   document.getElementById(elId).innerHTML = h;
 }
 function renderDynamics(){
-  renderDynamicsGroupTable('dynamicsTable', 'Статья', CATEGORIES.map(c=>({ label:c, match: ob=>ob.category===c })));
+  renderDynamicsGroupTable('dynamicsTable', 'Статья', categoryList.map(c=>({ label:c, match: ob=>ob.category===c })));
   renderDynamicsGroupTable('dynamicsTierTable', 'Тип платежа', TIERS.map(t=>({ label:t.label, match: ob=>ob.tier===t.key })));
 }
 function dynamicsCell(v, prev){
@@ -696,15 +725,45 @@ function dynamicsCell(v, prev){
 /* ---------- category priorities ---------- */
 function renderPriorities(){
   const el = document.getElementById('prioritiesTable');
-  let h = '<thead><tr><th class="rowlabel">Статья</th><th>Приоритет</th></tr></thead><tbody>';
-  CATEGORIES.forEach(cat=>{
+  let h = '<thead><tr><th class="rowlabel">Статья</th><th>Приоритет</th><th>Обязательств</th><th></th></tr></thead><tbody>';
+  categoryList.forEach(cat=>{
     const tier = defaultTierForCategory(cat);
     const opts = TIERS.map(t=>'<option value="'+t.key+'"'+(t.key===tier?' selected':'')+'>'+esc(t.label)+'</option>').join('');
-    h += '<tr><td class="rowlabel">'+esc(cat)+'</td><td><select class="priorityTierSelect" data-category="'+esc(cat)+'">'+opts+'</select> <span class="note priorityStatus" data-category="'+esc(cat)+'"></span></td></tr>';
+    const used = obligations.filter(ob=>ob.category===cat).length;
+    h += '<tr><td class="rowlabel">'+esc(cat)+'</td>'
+       + '<td><select class="priorityTierSelect" data-category="'+esc(cat)+'">'+opts+'</select> <span class="note priorityStatus" data-category="'+esc(cat)+'"></span></td>'
+       + '<td class="num">'+used+'</td>'
+       + '<td><button class="btn small deleteCategoryBtn" data-category="'+esc(cat)+'">Удалить</button></td></tr>';
   });
   h += '</tbody>';
   el.innerHTML = h;
 }
+document.getElementById('addCategoryBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('addCategoryStatus');
+  const name = document.getElementById('newCategoryName').value.trim();
+  const tier = document.getElementById('newCategoryTier').value;
+  if(!name){ statusEl.textContent='Укажите название статьи.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  const { error } = await sb.from('pay_category_priorities')
+    .insert({ category:name, tier, updated_by: session.user.id, updated_by_email: session.user.email });
+  if(error){ statusEl.textContent = /duplicate key/i.test(error.message) ? 'Такая статья уже есть.' : 'Ошибка: '+error.message; return; }
+  statusEl.textContent = 'Добавлено.';
+  document.getElementById('newCategoryName').value = '';
+  await loadAll();
+  populateSelects();
+});
+document.getElementById('prioritiesTable').addEventListener('click', async e=>{
+  const delBtn = e.target.closest('.deleteCategoryBtn'); if(!delBtn) return;
+  const cat = delBtn.dataset.category;
+  const used = obligations.filter(ob=>ob.category===cat).length;
+  const msg = used
+    ? 'Статью «'+cat+'» использует '+used+' обязательств(о/а) — они останутся с этой статьёй, но выбрать её для новых обязательств будет нельзя. Удалить из справочника?'
+    : 'Удалить статью «'+cat+'»?';
+  if(!confirm(msg)) return;
+  await sb.from('pay_category_priorities').delete().eq('category', cat);
+  await loadAll();
+  populateSelects();
+});
 document.getElementById('prioritiesTable').addEventListener('change', async e=>{
   const sel = e.target.closest('.priorityTierSelect'); if(!sel) return;
   const category = sel.dataset.category, tier = sel.value;
@@ -774,7 +833,7 @@ function renderOverview(){
     + TIERS.map(t=> kpi(t.label, fmtRub(balanceAtMatch(ob=>ob.tier===t.key, today)))).join('');
 
   renderStructureTable('overviewTierTable', 'Тип платежа', TIERS.map(t=>({ label:t.label, sum: balanceAtMatch(ob=>ob.tier===t.key, today) })), totalNow);
-  renderStructureTable('overviewCategoryTable', 'Статья', CATEGORIES.map(c=>({ label:c, sum: balanceAtMatch(ob=>ob.category===c, today) })), totalNow);
+  renderStructureTable('overviewCategoryTable', 'Статья', categoryList.map(c=>({ label:c, sum: balanceAtMatch(ob=>ob.category===c, today) })), totalNow);
   counterpartyStructureTable('overviewCounterpartyTable', currentBalanceByCounterparty(), 10);
 
   const fromEl = document.getElementById('compareFrom'), toEl = document.getElementById('compareTo');
@@ -793,7 +852,7 @@ function renderOverview(){
   const tierRows = TIERS.map(t=>({ label:t.label, from: balanceAtMatch(ob=>ob.tier===t.key, from), to: balanceAtMatch(ob=>ob.tier===t.key, to) }));
   compareTable('compareTierTable', 'Тип платежа', tierRows);
 
-  const catRows = CATEGORIES.map(c=>({ label:c, from: balanceAtMatch(ob=>ob.category===c, from), to: balanceAtMatch(ob=>ob.category===c, to) }))
+  const catRows = categoryList.map(c=>({ label:c, from: balanceAtMatch(ob=>ob.category===c, from), to: balanceAtMatch(ob=>ob.category===c, to) }))
     .sort((a,b)=> Math.abs((b.to-b.from)) - Math.abs((a.to-a.from)));
   compareTable('compareCategoryTable', 'Статья', catRows);
 }
@@ -936,11 +995,10 @@ sb.auth.onAuthStateChange(async (event, session)=>{
     authScreen.style.display='none'; appRoot.style.display='block';
     document.getElementById('userEmail').textContent = emailToLogin(session.user.email);
     applyRoleFromSession(session); // синхронно, роль уже в сессии — без похода в базу
-    populateSelects();
     document.getElementById('queueDate').value = todayISO();
     document.getElementById('summaryDate').value = todayISO();
-    await loadAll();
-    applyDefaultTier(); // categoryPriority только что подгрузился из базы в loadAll() — обновим начальное значение
+    await loadAll(); // подгружает categoryList/categoryPriority из базы
+    populateSelects(); // список статей теперь известен — заполняем выпадающие списки
   } else {
     authScreen.style.display='flex'; appRoot.style.display='none';
   }
