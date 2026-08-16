@@ -544,11 +544,13 @@ function renderPaymentHistory(){
   box.innerHTML = h;
 }
 function actionsCell(ob,s,rem){
-  if(s==='cancelled') return '<button class="btn small reopenBtn" data-id="'+ob.id+'">Вернуть</button>';
-  if(s==='paid') return '<span class="note">—</span>';
-  return '<input type="number" class="payAmount" data-id="'+ob.id+'" step="0.01" min="0" value="'+Math.max(rem,0).toFixed(2)+'">'
+  let main;
+  if(s==='cancelled') main = '<button class="btn small reopenBtn" data-id="'+ob.id+'">Вернуть</button>';
+  else if(s==='paid') main = '<span class="note">—</span>';
+  else main = '<input type="number" class="payAmount" data-id="'+ob.id+'" step="0.01" min="0" value="'+Math.max(rem,0).toFixed(2)+'">'
        + '<button class="btn small primary payBtn" data-id="'+ob.id+'">Оплатить</button>'
        + '<button class="btn small cancelBtn" data-id="'+ob.id+'">Отменить</button>';
+  return main + ' <button class="btn small deleteObligationBtn" data-id="'+ob.id+'">Удалить</button>';
 }
 document.getElementById('registryTable').addEventListener('click', async e=>{
   const showPaymentsLink = e.target.closest('.showPaymentsLink');
@@ -577,6 +579,20 @@ document.getElementById('registryTable').addEventListener('click', async e=>{
   const reopenBtn = e.target.closest('.reopenBtn');
   if(reopenBtn){
     await sb.from('pay_obligations').update({status:'open', updated_at: new Date().toISOString()}).eq('id', reopenBtn.dataset.id);
+    await loadAll();
+    return;
+  }
+  const deleteObligationBtn = e.target.closest('.deleteObligationBtn');
+  if(deleteObligationBtn){
+    const id = deleteObligationBtn.dataset.id;
+    const ob = obligations.find(o=>o.id===id);
+    const paidCount = (paymentsByObligation.get(id)||[]).length;
+    const msg = paidCount
+      ? 'У обязательства «'+(ob?ob.counterparty:'')+'» есть '+paidCount+' оплат(а/ы) — они удалятся вместе с ним. Удалить безвозвратно?'
+      : 'Удалить обязательство «'+(ob?ob.counterparty:'')+'» безвозвратно? (в отличие от «Отменить» это нельзя вернуть)';
+    if(!confirm(msg)) return;
+    if(openPaymentsObligationId === id) openPaymentsObligationId = null;
+    await sb.from('pay_obligations').delete().eq('id', id);
     await loadAll();
     return;
   }
