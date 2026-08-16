@@ -144,6 +144,7 @@ table.dt input[type=number]{width:80px;}
     <button class="tab-btn" data-tab="overview">Структура обязательств</button>
     <button class="tab-btn" data-tab="queue">Очередь приоритизации</button>
     <button class="tab-btn" data-tab="budget">Бюджет</button>
+    <button class="tab-btn" data-tab="forecast">Прогноз</button>
     <button class="tab-btn" data-tab="summary">Итоги периода</button>
     <button class="tab-btn" data-tab="leaks">Утечки</button>
     <button class="tab-btn" data-tab="dynamics">Динамика</button>
@@ -272,6 +273,38 @@ table.dt input[type=number]{width:80px;}
         <div class="field-row" style="margin-top:10px;"><button class="btn primary" id="impCashConfirmBtn">Импортировать</button><span class="note" id="impCashConfirmStatus"></span></div>
       </div>
     </div>
+
+    <!-- Поступления -->
+    <div class="card">
+      <h2>Загрузить поступления <span class="hint">факт прихода денег, с привязкой к дате</span></h2>
+      <div class="field-row"><label>Файл</label><input type="file" id="impRecFile" accept=".xlsx,.xls,.csv"><span class="note" id="impRecFileStatus"></span></div>
+      <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
+      <div class="field-row"><textarea id="impRecPaste" style="min-height:70px;"></textarea></div>
+      <div class="field-row"><button class="btn" id="impRecParseBtn">Разобрать вставленное</button><span class="note" id="impRecParseStatus"></span></div>
+      <div id="impRecMapping" style="display:none;">
+        <div class="field-row" id="impRecMappingFields"></div>
+        <div class="note">Статья необязательна — без неё поступления получат «Не распределено». Каждая строка привязана к своей дате поступления.</div>
+        <div class="table-wrap" style="margin-top:10px;"><table class="dt" id="impRecPreview"></table></div>
+        <div class="field-row" style="margin-top:10px;"><button class="btn primary" id="impRecConfirmBtn">Импортировать</button><span class="note" id="impRecConfirmStatus"></span></div>
+      </div>
+    </div>
+
+    <!-- Бюджет доходов -->
+    <div class="card">
+      <h2>Загрузить бюджет доходов <span class="hint">план по статьям дохода на месяц</span></h2>
+      <div class="field-row"><label>Месяц бюджета</label><input type="month" id="impIncBudMonth"></div>
+      <div class="field-row"><label>Файл</label><input type="file" id="impIncBudFile" accept=".xlsx,.xls,.csv"><span class="note" id="impIncBudFileStatus"></span></div>
+      <div class="note">Или вставьте диапазон ячеек из Excel (Ctrl+C → Ctrl+V) вместо файла:</div>
+      <div class="field-row"><textarea id="impIncBudPaste" style="min-height:70px;"></textarea></div>
+      <div class="field-row"><button class="btn" id="impIncBudParseBtn">Разобрать вставленное</button><span class="note" id="impIncBudParseStatus"></span></div>
+      <div id="impIncBudMapping" style="display:none;">
+        <div class="field-row" id="impIncBudMappingFields"></div>
+        <div class="note">Несколько строк с одной статьёй сложатся в план дохода по этой статье; исходные строки будут видны при клике на статью в «Бюджете».</div>
+        <div id="impIncBudExtraArea"></div>
+        <div class="table-wrap" style="margin-top:10px;"><table class="dt" id="impIncBudPreview"></table></div>
+        <div class="field-row" style="margin-top:10px;"><button class="btn primary" id="impIncBudConfirmBtn">Импортировать</button><span class="note" id="impIncBudConfirmStatus"></span></div>
+      </div>
+    </div>
   </div>
 
   <!-- СТРУКТУРА ОБЯЗАТЕЛЬСТВ -->
@@ -377,17 +410,36 @@ table.dt input[type=number]{width:80px;}
       </div>
     </div>
     <div class="card">
-      <h2>Приоритет по статье <span class="hint">проставляется автоматически при выборе статьи в форме ввода</span></h2>
+      <h2>Статьи расходов — приоритет <span class="hint">проставляется автоматически при выборе статьи в форме ввода</span></h2>
       <div class="table-wrap"><table class="dt" id="prioritiesTable"></table></div>
       <div class="note">Приоритет меняется здесь один раз для всей статьи — дальше при добавлении обязательства тип подставляется сам (для конкретного платежа его всё равно можно поменять вручную в форме ввода). Удаление статьи убирает её только из списка для новых обязательств — уже созданные обязательства с этой статьёй остаются как есть.</div>
+    </div>
+
+    <div class="card">
+      <h2>Новая статья дохода</h2>
+      <div class="field-row">
+        <label>Название</label><input type="text" id="newIncomeCategoryName" placeholder="например, Аренда сверх плана" style="width:240px;">
+        <button class="btn primary" id="addIncomeCategoryBtn">Добавить</button>
+        <span class="note" id="addIncomeCategoryStatus"></span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Статьи доходов <span class="hint">без приоритета — у дохода нет «критичности неполучения»</span></h2>
+      <div class="table-wrap"><table class="dt" id="incomePrioritiesTable"></table></div>
+      <div class="note">Переименование каскадно применяется в поступлениях, бюджете доходов и справочнике. Удаление убирает статью только из списка для новых поступлений.</div>
     </div>
   </div>
 
   <!-- БЮДЖЕТ -->
   <div class="tab-panel" id="panel-budget">
     <div class="card">
-      <h2>Бюджет на месяц <span class="hint">план по статьям, корректировки, факт</span></h2>
+      <h2>Бюджет на месяц <span class="hint">план по статьям, корректировки, факт — расходы и доходы</span></h2>
       <div class="field-row"><label>Месяц</label><input type="month" id="budgetMonth"></div>
+    </div>
+    <div class="kpi-row" id="budgetNetKpiRow"></div>
+
+    <div class="card">
+      <h2>Расходы</h2>
     </div>
     <div class="kpi-row" id="budgetKpiRow"></div>
     <div class="card">
@@ -395,6 +447,37 @@ table.dt input[type=number]{width:80px;}
       <div id="budgetDrillBox"></div>
       <div class="note">«Первоначальный план» ставится один раз при создании строки и не меняется — это эталон, с которым сравнивается «Текущий план» после корректировок (насколько разъехалось планирование). Любое изменение текущего плана просит причину и попадает в историю (клик по «Корректировка»). «Факт» — реально оплачено по статье в этом месяце.</div>
     </div>
+
+    <div class="card">
+      <h2>Доходы</h2>
+    </div>
+    <div class="kpi-row" id="incomeBudgetKpiRow"></div>
+    <div class="card">
+      <div class="table-wrap"><table class="dt" id="incomeBudgetTable"></table></div>
+      <div id="incomeBudgetDrillBox"></div>
+      <div class="note">Та же логика, что у расходов: первоначальный план — эталон, текущий план правится с обязательной причиной, факт — реально полученное по статье в этом месяце.</div>
+    </div>
+  </div>
+
+  <!-- ПРОГНОЗ (ДДС на кассовой основе) -->
+  <div class="tab-panel" id="panel-forecast">
+    <div class="card">
+      <h2>Прогноз исполнения на конец месяца <span class="hint">экстраполяция от факта на дату — ДДС на кассовой основе, не ОПиУ</span></h2>
+      <div class="field-row"><label>Месяц</label><input type="month" id="forecastMonth"></div>
+      <div class="note" id="forecastPeriodNote"></div>
+    </div>
+    <div class="kpi-row" id="forecastNetKpiRow"></div>
+    <div class="card">
+      <h2>Доходы <span class="hint">факт на дату / прогноз на конец месяца / план</span></h2>
+      <div class="kpi-row" id="forecastIncomeKpiRow"></div>
+      <div class="table-wrap"><table class="dt" id="forecastIncomeTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>Расходы <span class="hint">факт на дату / прогноз на конец месяца / план</span></h2>
+      <div class="kpi-row" id="forecastExpenseKpiRow"></div>
+      <div class="table-wrap"><table class="dt" id="forecastExpenseTable"></table></div>
+    </div>
+    <div class="note">Прогноз — простая линейная экстраполяция: факт на сегодня делится на число прошедших дней месяца и умножается на число дней в месяце. Это не статистическая модель и не учитывает сезонность — прозрачный ориентир, а не точный расчёт.</div>
   </div>
 
   <!-- ИТОГИ ПЕРИОДА -->
@@ -475,6 +558,11 @@ let openingBalances = [];       // pay_opening_balances rows — ручные о
 let cashPositions = [];         // pay_cash_positions rows, отсортированы по дате убыв.
 let budgetLines = [];           // pay_budget_lines rows
 let budgetRevisionsByLine = new Map(); // budget_line_id -> [pay_budget_revisions rows]
+let incomeCategoryList = [];    // pay_income_categories rows (category names)
+let receipts = [];              // pay_receipts rows
+let incomeBudgetLines = [];     // pay_income_budget_lines rows
+let incomeBudgetRevisionsByLine = new Map();
+let incomeBudgetLineItemsByLine = new Map();
 
 /* ---------- derived ---------- */
 function paidAmount(ob){ return (paymentsByObligation.get(ob.id)||[]).reduce((s,p)=>s+Number(p.amount||0),0); }
@@ -522,6 +610,19 @@ async function loadAll(){
   const { data: budgetItemData } = await sb.from('pay_budget_line_items').select('*').order('created_at',{ascending:true});
   budgetLineItemsByLine = new Map();
   (budgetItemData||[]).forEach(r=>{ if(!budgetLineItemsByLine.has(r.budget_line_id)) budgetLineItemsByLine.set(r.budget_line_id, []); budgetLineItemsByLine.get(r.budget_line_id).push(r); });
+
+  const { data: incCatData } = await sb.from('pay_income_categories').select('*').order('category',{ascending:true});
+  incomeCategoryList = (incCatData||[]).map(r=>r.category);
+  const { data: receiptsData } = await sb.from('pay_receipts').select('*').order('received_at',{ascending:true});
+  receipts = receiptsData||[];
+  const { data: incBudgetLineData } = await sb.from('pay_income_budget_lines').select('*');
+  incomeBudgetLines = incBudgetLineData||[];
+  const { data: incBudgetRevData } = await sb.from('pay_income_budget_revisions').select('*').order('changed_at',{ascending:false});
+  incomeBudgetRevisionsByLine = new Map();
+  (incBudgetRevData||[]).forEach(r=>{ if(!incomeBudgetRevisionsByLine.has(r.budget_line_id)) incomeBudgetRevisionsByLine.set(r.budget_line_id, []); incomeBudgetRevisionsByLine.get(r.budget_line_id).push(r); });
+  const { data: incBudgetItemData } = await sb.from('pay_income_budget_line_items').select('*').order('created_at',{ascending:true});
+  incomeBudgetLineItemsByLine = new Map();
+  (incBudgetItemData||[]).forEach(r=>{ if(!incomeBudgetLineItemsByLine.has(r.budget_line_id)) incomeBudgetLineItemsByLine.set(r.budget_line_id, []); incomeBudgetLineItemsByLine.get(r.budget_line_id).push(r); });
   renderActiveTab();
   updateApprovalBadge();
 }
@@ -549,11 +650,12 @@ function renderActiveTab(){
   if(currentTab==='registry'){ renderRegistry(); renderCashCard(); }
   else if(currentTab==='overview') renderOverview();
   else if(currentTab==='queue') renderQueue();
-  else if(currentTab==='budget') renderBudget();
+  else if(currentTab==='budget') renderBudgetTab();
+  else if(currentTab==='forecast') renderForecast();
   else if(currentTab==='summary') renderSummary();
   else if(currentTab==='leaks') renderLeaks();
   else if(currentTab==='dynamics') renderDynamics();
-  else if(currentTab==='priorities') renderPriorities();
+  else if(currentTab==='priorities'){ renderPriorities(); renderIncomePriorities(); }
   else if(currentTab==='approval') renderApproval();
 }
 
@@ -625,6 +727,7 @@ function filteredObligations(){
 let openPaymentsObligationId = null;
 let openBudgetDrill = null; // { type: 'revisions'|'items', lineId } | null
 let budgetLineItemsByLine = new Map();
+let openIncomeBudgetDrill = null;
 function renderRegistry(){
   const rows = filteredObligations();
   const el = document.getElementById('registryTable');
@@ -850,6 +953,25 @@ const IMPORT_TYPES = {
       {key:'prior_day_inflow', label:'Поступления', required:false, guess:['поступлен','приход']}
     ],
     mappingNote: 'Если на дату уже есть сохранённая кассовая позиция — значение обновится, а не задвоится.'
+  },
+  rec: {
+    prefix: 'impRec',
+    fields: [
+      {key:'received_at', label:'Дата поступления', required:true, guess:['дата','поступлен']},
+      {key:'amount', label:'Сумма', required:true, guess:['сумма','итого']},
+      {key:'category', label:'Статья', required:false, guess:['статья','категория']},
+      {key:'source', label:'Источник/плательщик', required:false, guess:['плательщик','источник','контрагент','клиент']}
+    ],
+    mappingNote: 'Статья необязательна — без неё поступления получат «Не распределено». Каждая строка привязана к своей дате поступления.'
+  },
+  incBud: {
+    prefix: 'impIncBud',
+    fields: [
+      {key:'category', label:'Статья', required:true, guess:['статья','категория']},
+      {key:'amount', label:'Сумма', required:true, guess:['сумма','план','итого']},
+      {key:'label', label:'Описание/подпункт', required:false, guess:['описание','подпункт','позиция']}
+    ],
+    mappingNote: 'Несколько строк с одной статьёй сложатся в план дохода по этой статье; исходные строки будут видны при клике на статью в «Бюджете».'
   }
 };
 const importData = {};
@@ -908,6 +1030,7 @@ function renderImportPreview(typeKey){
   document.getElementById(p+'Preview').innerHTML = h;
   document.getElementById(p+'ConfirmStatus').textContent = 'Строк: '+data.rows.length+(data.rows.length>20?' (показаны первые 20)':'');
   if(typeKey==='bud') renderBudgetImportCategoryMapping();
+  if(typeKey==='incBud') renderIncomeBudgetImportCategoryMapping();
 }
 function wireImportType(typeKey){
   const p = IMPORT_TYPES[typeKey].prefix;
@@ -1090,6 +1213,98 @@ document.getElementById('impBudConfirmBtn').addEventListener('click', async ()=>
   }
   statusEl.textContent = 'Создано статей бюджета: '+created+(skipped?(', уже был план на месяц (пропущено): '+skipped):'')+'.';
   resetImportType('bud');
+  await loadAll();
+});
+
+/* ---------- import: поступления и бюджет доходов ---------- */
+async function renameIncomeCategory(oldName, newName){
+  if(!oldName || oldName===newName) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  await sb.from('pay_income_categories').upsert({ category:newName, updated_by:session.user.id, updated_by_email:session.user.email }, { onConflict:'category' });
+  await sb.from('pay_receipts').update({ category:newName }).eq('category', oldName);
+  await sb.from('pay_income_budget_lines').update({ category:newName }).eq('category', oldName);
+  await sb.from('pay_income_categories').delete().eq('category', oldName);
+}
+document.getElementById('impRecConfirmBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('impRecConfirmStatus');
+  const values = importMappingValues('rec');
+  if(values.received_at===''||values.amount===''){ statusEl.textContent='Сопоставьте Дату поступления и Сумму.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!incomeCategoryList.includes('Не распределено')){
+    await sb.from('pay_income_categories').insert({ category:'Не распределено', created_by: session.user.id, created_by_email: session.user.email });
+  }
+  const rows = importData.rec.rows.map(row=>{
+    const received_at = parseImportDate(row[values.received_at]);
+    const amount = parseImportAmount(row[values.amount]);
+    const category = (values.category!=='' && row[values.category] && row[values.category].trim()) ? row[values.category].trim() : 'Не распределено';
+    const source = values.source!=='' ? (row[values.source]||'').trim() : null;
+    return { received_at, amount, category, source };
+  }).filter(r=> r.received_at && isFinite(r.amount) && r.amount>0);
+  if(!rows.length){ statusEl.textContent='Нет корректных строк (проверьте сопоставление и формат даты/суммы).'; return; }
+  const inserts = rows.map(r=>({ received_at:r.received_at, amount:r.amount, category:r.category, source:r.source||null,
+    created_by: session.user.id, created_by_email: session.user.email }));
+  const { error } = await sb.from('pay_receipts').insert(inserts);
+  if(error){ statusEl.textContent = 'Ошибка: '+error.message; return; }
+  statusEl.textContent = 'Импортировано поступлений: '+inserts.length+'.';
+  resetImportType('rec');
+  await loadAll();
+});
+function renderIncomeBudgetImportCategoryMapping(){
+  const values = importMappingValues('incBud');
+  const area = document.getElementById('impIncBudExtraArea');
+  if(values.category===''){ area.innerHTML=''; return; }
+  const names = Array.from(new Set(importData.incBud.rows.map(row=> (row[values.category]||'').trim()).filter(Boolean)));
+  const unmatched = names.filter(n=> !incomeCategoryList.includes(n));
+  if(!unmatched.length){ area.innerHTML = ''; return; }
+  let h = '<div class="note">В файле есть статьи дохода, которых нет в справочнике — для каждой укажите, создать новую или переименовать существующую в это название:</div>';
+  unmatched.forEach(name=>{
+    const opts = '<option value="">создать как новую статью</option>' + incomeCategoryList.map(c=>'<option value="'+esc(c)+'">переименовать «'+esc(c)+'» в это</option>').join('');
+    h += '<div class="field-row"><label>«'+esc(name)+'»</label><select class="incBudCategoryRenameSelect" data-newname="'+esc(name)+'">'+opts+'</select></div>';
+  });
+  area.innerHTML = h;
+}
+document.getElementById('impIncBudConfirmBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('impIncBudConfirmStatus');
+  const values = importMappingValues('incBud');
+  if(values.category===''||values.amount===''){ statusEl.textContent='Сопоставьте Статью и Сумму.'; return; }
+  const monthEl = document.getElementById('impIncBudMonth');
+  if(!monthEl.value){ statusEl.textContent='Укажите месяц бюджета.'; return; }
+  const periodMonth = monthEl.value+'-01';
+  const { data:{ session } } = await sb.auth.getSession();
+
+  const renameSelects = document.querySelectorAll('.incBudCategoryRenameSelect');
+  for(const sel of renameSelects){ if(sel.value) await renameIncomeCategory(sel.value, sel.dataset.newname); }
+  await loadAll();
+
+  const groups = new Map();
+  importData.incBud.rows.forEach(row=>{
+    const category = (row[values.category]||'').trim();
+    const amount = parseImportAmount(row[values.amount]);
+    if(!category || !isFinite(amount)) return;
+    const label = values.label!=='' ? (row[values.label]||'').trim() : '';
+    if(!groups.has(category)) groups.set(category, { sum:0, items:[] });
+    const g = groups.get(category);
+    g.sum += amount; g.items.push({ label, amount });
+  });
+  if(!groups.size){ statusEl.textContent='Нет корректных строк (проверьте сопоставление и формат сумм).'; return; }
+
+  let created=0, skipped=0;
+  for(const [category, g] of groups.entries()){
+    if(!incomeCategoryList.includes(category)){
+      await sb.from('pay_income_categories').insert({ category, created_by:session.user.id, created_by_email:session.user.email });
+    }
+    if(incomeBudgetLines.find(l=>l.period_month===periodMonth && l.category===category)){ skipped++; continue; }
+    const { data: lineRow, error: lineErr } = await sb.from('pay_income_budget_lines').insert({
+      period_month: periodMonth, category, original_amount: g.sum, planned_amount: g.sum,
+      created_by: session.user.id, created_by_email: session.user.email
+    }).select().single();
+    if(lineErr || !lineRow) continue;
+    created++;
+    const itemInserts = g.items.map((it,i)=>({ budget_line_id: lineRow.id, label: it.label || ('Позиция '+(i+1)), amount: it.amount, created_by:session.user.id, created_by_email:session.user.email }));
+    await sb.from('pay_income_budget_line_items').insert(itemInserts);
+  }
+  statusEl.textContent = 'Создано статей бюджета дохода: '+created+(skipped?(', уже был план на месяц (пропущено): '+skipped):'')+'.';
+  resetImportType('incBud');
   await loadAll();
 });
 
@@ -1311,6 +1526,51 @@ document.getElementById('prioritiesTable').addEventListener('change', async e=>{
   categoryPriority.set(category, tier);
 });
 
+/* ---------- income categories (без приоритета) ---------- */
+function renderIncomePriorities(){
+  const el = document.getElementById('incomePrioritiesTable');
+  let h = '<thead><tr><th class="rowlabel">Статья</th><th>Поступлений</th><th></th></tr></thead><tbody>';
+  incomeCategoryList.forEach(cat=>{
+    const used = receipts.filter(r=>r.category===cat).length;
+    h += '<tr><td class="rowlabel">'+esc(cat)+'</td><td class="num">'+used+'</td>'
+       + '<td><button class="btn small renameIncomeCategoryBtn" data-category="'+esc(cat)+'">Переименовать</button> <button class="btn small deleteIncomeCategoryBtn" data-category="'+esc(cat)+'">Удалить</button></td></tr>';
+  });
+  h += '</tbody>';
+  el.innerHTML = h;
+}
+document.getElementById('addIncomeCategoryBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('addIncomeCategoryStatus');
+  const name = document.getElementById('newIncomeCategoryName').value.trim();
+  if(!name){ statusEl.textContent='Укажите название статьи.'; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  const { error } = await sb.from('pay_income_categories').insert({ category:name, created_by: session.user.id, created_by_email: session.user.email });
+  if(error){ statusEl.textContent = /duplicate key/i.test(error.message) ? 'Такая статья уже есть.' : 'Ошибка: '+error.message; return; }
+  statusEl.textContent = 'Добавлено.';
+  document.getElementById('newIncomeCategoryName').value = '';
+  await loadAll();
+});
+document.getElementById('incomePrioritiesTable').addEventListener('click', async e=>{
+  const renameBtn = e.target.closest('.renameIncomeCategoryBtn');
+  if(renameBtn){
+    const oldName = renameBtn.dataset.category;
+    const newName = (prompt('Новое название для статьи дохода «'+oldName+'»:', oldName)||'').trim();
+    if(!newName || newName===oldName) return;
+    if(incomeCategoryList.includes(newName)){ alert('Статья «'+newName+'» уже существует.'); return; }
+    await renameIncomeCategory(oldName, newName);
+    await loadAll();
+    return;
+  }
+  const delBtn = e.target.closest('.deleteIncomeCategoryBtn'); if(!delBtn) return;
+  const cat = delBtn.dataset.category;
+  const used = receipts.filter(r=>r.category===cat).length;
+  const msg = used
+    ? 'Статью «'+cat+'» использует '+used+' поступлений(е) — они останутся с этой статьёй. Удалить из справочника?'
+    : 'Удалить статью «'+cat+'»?';
+  if(!confirm(msg)) return;
+  await sb.from('pay_income_categories').delete().eq('category', cat);
+  await loadAll();
+});
+
 /* ---------- overview: structure + period comparison ---------- */
 function currentBalanceByCounterparty(categoryFilter){
   const map = new Map();
@@ -1439,7 +1699,8 @@ document.getElementById('saveOpeningBtn').addEventListener('click', async ()=>{
 });
 
 /* ---------- budget ---------- */
-document.getElementById('budgetMonth').addEventListener('change', renderBudget);
+document.getElementById('budgetMonth').addEventListener('change', renderBudgetTab);
+function renderBudgetTab(){ renderBudget(); renderIncomeBudget(); renderBudgetNetSummary(); }
 function currentBudgetMonthISO(){
   const el = document.getElementById('budgetMonth');
   if(!el.value){
@@ -1459,6 +1720,20 @@ function factForCategoryInMonth(category, periodMonthISO){
       if(p.paid_at>=start && p.paid_at<=end) sum += Number(p.amount||0);
     });
   });
+  return sum;
+}
+function incomeFactForCategoryInMonth(category, periodMonthISO){
+  const d = new Date(periodMonthISO+'T00:00:00');
+  const start = periodMonthISO;
+  const end = new Date(d.getFullYear(), d.getMonth()+1, 0).toISOString().slice(0,10);
+  let sum = 0;
+  receipts.forEach(r=>{ if(r.category===category && r.received_at>=start && r.received_at<=end) sum += Number(r.amount||0); });
+  return sum;
+}
+function receiptsSumInRange(start, end){ return receipts.reduce((s,r)=> (r.received_at>=start && r.received_at<=end) ? s+Number(r.amount||0) : s, 0); }
+function paymentsSumInRange(start, end){
+  let sum = 0;
+  obligations.forEach(ob=> (paymentsByObligation.get(ob.id)||[]).forEach(p=>{ if(p.paid_at>=start && p.paid_at<=end) sum += Number(p.amount||0); }));
   return sum;
 }
 function renderBudget(){
@@ -1593,6 +1868,238 @@ document.getElementById('budgetTable').addEventListener('change', async e=>{
   await sb.from('pay_budget_lines').update({ planned_amount: newAmount, updated_at: new Date().toISOString() }).eq('id', lineId);
   await loadAll();
 });
+
+/* ---------- бюджет доходов (зеркало расходного, без приоритета) ---------- */
+function budgetTotalsForMonth(lines, periodMonth){
+  const monthLines = lines.filter(l=>l.period_month===periodMonth);
+  return { original: monthLines.reduce((s,l)=>s+Number(l.original_amount),0), planned: monthLines.reduce((s,l)=>s+Number(l.planned_amount),0) };
+}
+function totalFactExpenseInMonth(periodMonth){ return categoryList.reduce((s,c)=>s+factForCategoryInMonth(c,periodMonth),0); }
+function totalFactIncomeInMonth(periodMonth){ return incomeCategoryList.reduce((s,c)=>s+incomeFactForCategoryInMonth(c,periodMonth),0); }
+function renderBudgetNetSummary(){
+  const periodMonth = currentBudgetMonthISO();
+  const exp = budgetTotalsForMonth(budgetLines, periodMonth);
+  const inc = budgetTotalsForMonth(incomeBudgetLines, periodMonth);
+  const factExpense = totalFactExpenseInMonth(periodMonth);
+  const factIncome = totalFactIncomeInMonth(periodMonth);
+  const plannedNet = inc.planned - exp.planned;
+  const factNet = factIncome - factExpense;
+  document.getElementById('budgetNetKpiRow').innerHTML =
+      kpi('План: доходы − расходы', (plannedNet>=0?'+':'')+fmtRub(plannedNet), 'доходы '+fmtRub(inc.planned)+' − расходы '+fmtRub(exp.planned))
+    + kpi('Факт: доходы − расходы', (factNet>=0?'+':'')+fmtRub(factNet), 'доходы '+fmtRub(factIncome)+' − расходы '+fmtRub(factExpense));
+}
+function renderIncomeBudget(){
+  const periodMonth = currentBudgetMonthISO();
+  const lineByCategory = new Map(incomeBudgetLines.filter(l=>l.period_month===periodMonth).map(l=>[l.category,l]));
+
+  let totalOriginal=0, totalPlanned=0, totalFact=0;
+  let h = '<thead><tr><th class="rowlabel">Статья</th><th>Первоначальный план</th><th>Текущий план</th><th>Корректировка</th><th>Факт</th><th>Откл. факта от плана</th></tr></thead><tbody>';
+  incomeCategoryList.forEach(cat=>{
+    const line = lineByCategory.get(cat);
+    const fact = incomeFactForCategoryInMonth(cat, periodMonth);
+    totalFact += fact;
+    if(!line){
+      h += '<tr><td class="rowlabel">'+esc(cat)+'</td>'
+         + '<td class="num">—</td>'
+         + '<td class="num"><input type="number" class="newIncomeBudgetAmount" data-category="'+esc(cat)+'" step="0.01" style="width:90px;"> <button class="btn small setIncomeBudgetBtn" data-category="'+esc(cat)+'">Задать план</button></td>'
+         + '<td class="num">—</td>'
+         + '<td class="num">'+fmtRub(fact)+'</td>'
+         + '<td class="num">—</td></tr>';
+      return;
+    }
+    totalOriginal += Number(line.original_amount);
+    totalPlanned += Number(line.planned_amount);
+    const delta = Number(line.planned_amount) - Number(line.original_amount);
+    const deltaCell = Math.abs(delta) > 0.5
+      ? '<span class="badge '+(delta>0?'st-good':'st-critical')+' clickable incomeRevisionToggle" data-line="'+line.id+'">'+(delta>0?'+':'')+fmtRub(delta)+'</span>'
+      : '<span class="badge st-none clickable incomeRevisionToggle" data-line="'+line.id+'">без корректировок</span>';
+    const factDelta = fact - Number(line.planned_amount);
+    const itemCount = (incomeBudgetLineItemsByLine.get(line.id)||[]).length;
+    const catCell = itemCount
+      ? '<span class="clickable incomeItemsToggle" data-line="'+line.id+'">'+esc(cat)+' <span class="note">('+itemCount+' поз.)</span></span>'
+      : esc(cat);
+    h += '<tr><td class="rowlabel">'+catCell+'</td>'
+       + '<td class="num">'+fmtRub(line.original_amount)+'</td>'
+       + '<td class="num"><input type="number" class="incomeBudgetPlannedInput" data-line="'+line.id+'" step="0.01" style="width:90px;" value="'+Number(line.planned_amount).toFixed(2)+'"></td>'
+       + '<td class="num">'+deltaCell+'</td>'
+       + '<td class="num">'+fmtRub(fact)+'</td>'
+       + '<td class="num">'+(factDelta>=0?'+':'')+fmtRub(factDelta)+'</td></tr>';
+  });
+  h += '<tr class="total-row"><td class="rowlabel">Итого</td>'
+     + '<td class="num">'+fmtRub(totalOriginal)+'</td><td class="num">'+fmtRub(totalPlanned)+'</td>'
+     + '<td class="num">'+(totalPlanned-totalOriginal>=0?'+':'')+fmtRub(totalPlanned-totalOriginal)+'</td>'
+     + '<td class="num">'+fmtRub(totalFact)+'</td>'
+     + '<td class="num">'+(totalFact-totalPlanned>=0?'+':'')+fmtRub(totalFact-totalPlanned)+'</td></tr>';
+  h += '</tbody>';
+  document.getElementById('incomeBudgetTable').innerHTML = h;
+
+  document.getElementById('incomeBudgetKpiRow').innerHTML =
+      kpi('Первоначальный план', fmtRub(totalOriginal))
+    + kpi('Текущий план', fmtRub(totalPlanned), Math.abs(totalPlanned-totalOriginal)>0.5 ? 'корректировка: '+(totalPlanned-totalOriginal>=0?'+':'')+fmtRub(totalPlanned-totalOriginal) : '')
+    + kpi('Факт', fmtRub(totalFact))
+    + kpi('Откл. факта от плана', (totalFact-totalPlanned>=0?'+':'')+fmtRub(totalFact-totalPlanned));
+
+  renderIncomeBudgetDrillBox();
+}
+function renderIncomeBudgetDrillBox(){
+  const box = document.getElementById('incomeBudgetDrillBox');
+  if(!openIncomeBudgetDrill){ box.innerHTML=''; return; }
+  const line = incomeBudgetLines.find(l=>l.id===openIncomeBudgetDrill.lineId);
+  if(!line){ box.innerHTML=''; return; }
+  let h;
+  if(openIncomeBudgetDrill.type==='revisions'){
+    const revisions = incomeBudgetRevisionsByLine.get(line.id) || [];
+    h = '<div class="card" style="margin-top:10px;"><h2>История корректировок «'+esc(line.category)+'»</h2>'
+      + '<div class="table-wrap"><table class="dt"><thead><tr><th>Когда</th><th>Кто</th><th>Было</th><th>Стало</th><th>Причина</th></tr></thead><tbody>';
+    if(!revisions.length) h += '<tr class="empty-row"><td colspan="5">Корректировок ещё не было.</td></tr>';
+    revisions.forEach(r=>{
+      h += '<tr><td>'+fmtDate(r.changed_at.slice(0,10))+'</td><td>'+esc(r.changed_by_email)+'</td>'
+         + '<td class="num">'+fmtRub(r.previous_amount)+'</td><td class="num">'+fmtRub(r.new_amount)+'</td>'
+         + '<td>'+esc(r.reason||'—')+'</td></tr>';
+    });
+    h += '</tbody></table></div><button class="btn small" id="closeIncomeBudgetDrillBtn">Закрыть</button></div>';
+  } else {
+    const items = incomeBudgetLineItemsByLine.get(line.id) || [];
+    h = '<div class="card" style="margin-top:10px;"><h2>Позиции статьи «'+esc(line.category)+'» <span class="hint">из импорта бюджета</span></h2>'
+      + '<div class="table-wrap"><table class="dt"><thead><tr><th class="rowlabel">Описание</th><th>Сумма</th></tr></thead><tbody>';
+    if(!items.length) h += '<tr class="empty-row"><td colspan="2">Позиций нет.</td></tr>';
+    items.forEach(it=> h += '<tr><td class="rowlabel">'+esc(it.label||'—')+'</td><td class="num">'+fmtRub(it.amount)+'</td></tr>');
+    h += '</tbody></table></div><button class="btn small" id="closeIncomeBudgetDrillBtn">Закрыть</button></div>';
+  }
+  box.innerHTML = h;
+}
+document.getElementById('incomeBudgetDrillBox').addEventListener('click', e=>{
+  if(e.target.closest('#closeIncomeBudgetDrillBtn')){ openIncomeBudgetDrill = null; renderIncomeBudgetDrillBox(); }
+});
+document.getElementById('incomeBudgetTable').addEventListener('click', async e=>{
+  const setBtn = e.target.closest('.setIncomeBudgetBtn');
+  if(setBtn){
+    const category = setBtn.dataset.category;
+    const input = document.querySelector('.newIncomeBudgetAmount[data-category="'+CSS.escape(category)+'"]');
+    const amount = Number(input.value);
+    if(!amount || amount<=0) return;
+    const periodMonth = currentBudgetMonthISO();
+    const { data:{ session } } = await sb.auth.getSession();
+    const { error } = await sb.from('pay_income_budget_lines').insert({
+      period_month: periodMonth, category, original_amount: amount, planned_amount: amount,
+      created_by: session.user.id, created_by_email: session.user.email
+    });
+    if(error){ alert('Ошибка: '+error.message); return; }
+    await loadAll();
+    return;
+  }
+  const revToggle = e.target.closest('.incomeRevisionToggle');
+  if(revToggle){
+    const lineId = revToggle.dataset.line;
+    openIncomeBudgetDrill = (openIncomeBudgetDrill && openIncomeBudgetDrill.type==='revisions' && openIncomeBudgetDrill.lineId===lineId) ? null : {type:'revisions', lineId};
+    renderIncomeBudgetDrillBox();
+    return;
+  }
+  const itemsToggle = e.target.closest('.incomeItemsToggle');
+  if(itemsToggle){
+    const lineId = itemsToggle.dataset.line;
+    openIncomeBudgetDrill = (openIncomeBudgetDrill && openIncomeBudgetDrill.type==='items' && openIncomeBudgetDrill.lineId===lineId) ? null : {type:'items', lineId};
+    renderIncomeBudgetDrillBox();
+  }
+});
+document.getElementById('incomeBudgetTable').addEventListener('change', async e=>{
+  const input = e.target.closest('.incomeBudgetPlannedInput'); if(!input) return;
+  const lineId = input.dataset.line;
+  const line = incomeBudgetLines.find(l=>l.id===lineId);
+  const newAmount = Number(input.value);
+  if(!line || !isFinite(newAmount) || newAmount<0){ renderIncomeBudget(); return; }
+  if(Math.abs(newAmount - Number(line.planned_amount)) < 0.005) return;
+  const reason = prompt('Причина корректировки плана дохода по статье «'+line.category+'» ('+fmtRub(line.planned_amount)+' → '+fmtRub(newAmount)+'):');
+  if(reason===null){ renderIncomeBudget(); return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  await sb.from('pay_income_budget_revisions').insert({
+    budget_line_id: lineId, previous_amount: line.planned_amount, new_amount: newAmount, reason: reason||null,
+    changed_by: session.user.id, changed_by_email: session.user.email
+  });
+  await sb.from('pay_income_budget_lines').update({ planned_amount: newAmount, updated_at: new Date().toISOString() }).eq('id', lineId);
+  await loadAll();
+});
+
+/* ---------- прогноз: линейная экстраполяция от факта на дату (ДДС на кассовой основе) ---------- */
+document.getElementById('forecastMonth').addEventListener('change', renderForecast);
+function forecastPeriodInfo(){
+  const el = document.getElementById('forecastMonth');
+  if(!el.value){ const d=new Date(); el.value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+  const [y,m] = el.value.split('-').map(Number);
+  const start = new Date(y, m-1, 1);
+  const end = new Date(y, m, 0); // последний день месяца
+  const startISO = start.toISOString().slice(0,10);
+  const endISO = end.toISOString().slice(0,10);
+  const daysInMonth = end.getDate();
+  const today = todayISO();
+  const factEndISO = today < startISO ? startISO : (today > endISO ? endISO : today);
+  const daysElapsed = today < startISO ? 0 : Math.floor((new Date(factEndISO+'T00:00:00') - start) / 86400000) + 1;
+  return { startISO, endISO, daysInMonth, daysElapsed, factEndISO };
+}
+function extrapolateToMonthEnd(factToDate, daysElapsed, daysInMonth){ return daysElapsed>0 ? factToDate/daysElapsed*daysInMonth : 0; }
+function categoryFactToDate(category, startISO, toISO, isIncome){
+  let sum = 0;
+  if(isIncome){ receipts.forEach(r=>{ if(r.category===category && r.received_at>=startISO && r.received_at<=toISO) sum += Number(r.amount||0); }); }
+  else { obligations.forEach(ob=>{ if(ob.category!==category) return; (paymentsByObligation.get(ob.id)||[]).forEach(p=>{ if(p.paid_at>=startISO && p.paid_at<=toISO) sum += Number(p.amount||0); }); }); }
+  return sum;
+}
+function renderForecastCategoryTable(elId, catList, lines, isIncome, startISO, factEndISO, daysElapsed, daysInMonth, periodMonthISO){
+  const lineByCategory = new Map(lines.filter(l=>l.period_month===periodMonthISO).map(l=>[l.category,l]));
+  const rows = catList.map(cat=>{
+    const factToDate = categoryFactToDate(cat, startISO, factEndISO, isIncome);
+    const proj = extrapolateToMonthEnd(factToDate, daysElapsed, daysInMonth);
+    const planned = lineByCategory.has(cat) ? Number(lineByCategory.get(cat).planned_amount) : 0;
+    return { cat, factToDate, proj, planned };
+  }).filter(r=> Math.abs(r.factToDate)>0.5 || Math.abs(r.planned)>0.5)
+    .sort((a,b)=> Math.abs(b.proj-b.planned) - Math.abs(a.proj-a.planned));
+  let h = '<thead><tr><th class="rowlabel">Статья</th><th>Факт на дату</th><th>Прогноз на конец месяца</th><th>План</th><th>Откл. прогноза от плана</th></tr></thead><tbody>';
+  if(!rows.length) h += '<tr class="empty-row"><td colspan="5">Нет данных.</td></tr>';
+  rows.forEach(r=>{
+    const diff = r.proj - r.planned;
+    h += '<tr><td class="rowlabel">'+esc(r.cat)+'</td><td class="num">'+fmtRub(r.factToDate)+'</td><td class="num">'+fmtRub(r.proj)+'</td>'
+       + '<td class="num">'+fmtRub(r.planned)+'</td><td class="num">'+(diff>=0?'+':'')+fmtRub(diff)+'</td></tr>';
+  });
+  h += '</tbody>';
+  document.getElementById(elId).innerHTML = h;
+}
+function renderForecast(){
+  const { startISO, endISO, daysInMonth, daysElapsed, factEndISO } = forecastPeriodInfo();
+  document.getElementById('forecastPeriodNote').textContent =
+    'Период: '+fmtDate(startISO)+' — '+fmtDate(endISO)+'. Прошло дней: '+daysElapsed+' из '+daysInMonth+'.'+(factEndISO<endISO?' Факт считается по '+fmtDate(factEndISO)+' включительно.':'');
+
+  const incomeToDate = receiptsSumInRange(startISO, factEndISO);
+  const expenseToDate = paymentsSumInRange(startISO, factEndISO);
+  const projIncome = extrapolateToMonthEnd(incomeToDate, daysElapsed, daysInMonth);
+  const projExpense = extrapolateToMonthEnd(expenseToDate, daysElapsed, daysInMonth);
+  const projNet = projIncome - projExpense;
+
+  const plannedIncome = budgetTotalsForMonth(incomeBudgetLines, startISO).planned;
+  const plannedExpense = budgetTotalsForMonth(budgetLines, startISO).planned;
+  const plannedNet = plannedIncome - plannedExpense;
+  const projSurplusDeficit = projNet - plannedNet;
+
+  const plannedIncomeToDate = daysInMonth ? plannedIncome/daysInMonth*daysElapsed : 0;
+  const plannedExpenseToDate = daysInMonth ? plannedExpense/daysInMonth*daysElapsed : 0;
+  const factNetToDate = incomeToDate - expenseToDate;
+  const plannedNetToDate = plannedIncomeToDate - plannedExpenseToDate;
+  const varianceToDate = factNetToDate - plannedNetToDate;
+
+  document.getElementById('forecastNetKpiRow').innerHTML =
+      kpi('Прогноз на конец месяца', (projNet>=0?'+':'')+fmtRub(projNet), 'план: '+(plannedNet>=0?'+':'')+fmtRub(plannedNet))
+    + kpi(projSurplusDeficit>=0 ? 'Прогнозный профицит к плану' : 'Прогнозный дефицит к плану', (projSurplusDeficit>=0?'+':'')+fmtRub(projSurplusDeficit))
+    + kpi('Факт на дату (доходы−расходы)', (factNetToDate>=0?'+':'')+fmtRub(factNetToDate))
+    + kpi('Отклонение факта от плана на дату', (varianceToDate>=0?'+':'')+fmtRub(varianceToDate));
+
+  document.getElementById('forecastIncomeKpiRow').innerHTML =
+      kpi('Факт на дату', fmtRub(incomeToDate)) + kpi('Прогноз на конец месяца', fmtRub(projIncome))
+    + kpi('План', fmtRub(plannedIncome)) + kpi('Откл. прогноза от плана', (projIncome-plannedIncome>=0?'+':'')+fmtRub(projIncome-plannedIncome));
+  document.getElementById('forecastExpenseKpiRow').innerHTML =
+      kpi('Факт на дату', fmtRub(expenseToDate)) + kpi('Прогноз на конец месяца', fmtRub(projExpense))
+    + kpi('План', fmtRub(plannedExpense)) + kpi('Откл. прогноза от плана', (projExpense-plannedExpense>=0?'+':'')+fmtRub(projExpense-plannedExpense));
+
+  renderForecastCategoryTable('forecastIncomeTable', incomeCategoryList, incomeBudgetLines, true, startISO, factEndISO, daysElapsed, daysInMonth, startISO);
+  renderForecastCategoryTable('forecastExpenseTable', categoryList, budgetLines, false, startISO, factEndISO, daysElapsed, daysInMonth, startISO);
+}
 
 /* ---------- period summary ---------- */
 function periodBounds(type, refISO){
