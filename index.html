@@ -97,6 +97,19 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline
 .kpi .value{font-family:var(--font-mono);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
 .kpi .sub{font-size:11px;color:var(--ink-muted);margin-top:4px;}
 
+/* Дашборд: drill-down вместо вкладок — крупные кликабельные KPI + хлебные крошки */
+.dash-kpi-row{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+.dash-kpi-big{cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.dash-kpi-big:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.dash-kpi-big .label{font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-muted);font-weight:600;margin-bottom:8px;}
+.dash-kpi-big .value{font-family:var(--font-mono);font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
+.dash-kpi-big .sub{font-size:12.5px;color:var(--ink-2);margin-top:6px;}
+.tierCard{margin-bottom:16px;}
+.breadcrumb{font-size:13px;color:var(--ink-2);margin-bottom:14px;}
+.breadcrumb a{color:var(--accent);cursor:pointer;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.crumb-sep{color:var(--ink-muted);}
+
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap;}
 .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
 .badge.st-good{background:color-mix(in srgb, var(--good) 16%, transparent);color:var(--good);}
@@ -165,21 +178,112 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
   </header>
 
   <div class="tabs" id="tabs">
-    <button class="tab-btn active" data-tab="import">Импорт</button>
-    <button class="tab-btn" data-tab="registry">Реестр</button>
-    <button class="tab-btn" data-tab="overview">Структура обязательств</button>
-    <button class="tab-btn" data-tab="queue">Очередь приоритизации</button>
+    <button class="tab-btn active" data-tab="dashboard">Дашборд</button>
+    <button class="tab-btn" data-tab="registry" id="registryTabBtn">Реестр<span class="note" id="approvalPendingBadge"></span></button>
     <button class="tab-btn" data-tab="budget">Бюджет</button>
     <button class="tab-btn" data-tab="forecast">Прогноз</button>
-    <button class="tab-btn" data-tab="summary">Итоги периода</button>
-    <button class="tab-btn" data-tab="leaks">Утечки</button>
-    <button class="tab-btn" data-tab="dynamics">Динамика</button>
     <button class="tab-btn" data-tab="priorities">Приоритеты статей</button>
-    <button class="tab-btn" data-tab="approval" id="approvalTabBtn" style="display:none;">Согласование<span class="note" id="approvalPendingBadge"></span></button>
+    <button class="tab-btn" data-tab="import">Импорт</button>
+  </div>
+
+  <!-- ДАШБОРД -->
+  <div class="tab-panel active" id="panel-dashboard">
+    <div id="dashRootView">
+      <div class="kpi-row dash-kpi-row" id="dashRootKpis"></div>
+      <div class="field-row"><button class="btn primary" id="dashGoToRegistryBtn">Перейти к реестру платежей</button></div>
+
+      <div class="card">
+        <h2>Итоги периода <span class="hint">сколько и на что потрачено, сколько ушло в утечки</span></h2>
+        <div class="field-row">
+          <label>Период</label>
+          <select id="summaryType">
+            <option value="week">Неделя</option>
+            <option value="month">Месяц</option>
+          </select>
+          <label>Дата внутри периода</label><input type="date" id="summaryDate">
+        </div>
+      </div>
+      <div class="kpi-row" id="summaryKpiRow"></div>
+      <div class="card">
+        <h2>Расход по статьям за период</h2>
+        <div class="table-wrap"><table class="dt" id="summaryCategoryTable"></table></div>
+      </div>
+
+      <div class="card">
+        <h2>Динамика по статьям <span class="hint">открытый остаток на конец периода, 6 месяцев</span></h2>
+        <div class="table-wrap"><table class="dt" id="dynamicsTable"></table></div>
+        <div class="note">Открытый остаток = сумма обязательств минус оплаты, зачтённые к этой дате. Отменённые обязательства в расчёт не входят.</div>
+      </div>
+      <div class="card">
+        <h2>Динамика по типу платежа</h2>
+        <div class="table-wrap"><table class="dt" id="dynamicsTierTable"></table></div>
+      </div>
+
+      <div class="card">
+        <h2>Сравнение периодов <span class="hint">выросли обязательства или сократились — на начало периода vs на конец</span></h2>
+        <div class="field-row">
+          <label>На начало</label><input type="date" id="compareFrom">
+          <label>На конец</label><input type="date" id="compareTo">
+        </div>
+        <div class="note">Если в реестре ещё нет полной истории на эту дату — задайте известный остаток вручную:</div>
+        <div class="field-row">
+          <label>Дата</label><input type="date" id="openingDate">
+          <label>Статья</label><select id="openingCategory"><option value="">Итого (все статьи)</option></select>
+          <label>Остаток</label><input type="number" id="openingAmount" step="0.01" style="width:130px;"><span class="unit">₽</span>
+          <button class="btn" id="saveOpeningBtn">Сохранить как известный остаток</button>
+          <span class="note" id="openingStatus"></span>
+        </div>
+      </div>
+      <div class="kpi-row" id="compareKpiRow"></div>
+      <div class="card">
+        <h2>По типу платежа</h2>
+        <div class="table-wrap"><table class="dt" id="compareTierTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>По статьям <span class="hint">крупнейшие изменения — сверху</span></h2>
+        <div class="table-wrap"><table class="dt" id="compareCategoryTable"></table></div>
+      </div>
+    </div>
+
+    <div id="dashObligationsView" style="display:none;">
+      <div id="dashObligationsCrumbs"></div>
+      <div id="dashObligationsBody"></div>
+    </div>
+
+    <div id="dashEfficiencyView" style="display:none;">
+      <div id="dashEfficiencyCrumbs"></div>
+      <div id="dashEfficiencyBody"></div>
+    </div>
   </div>
 
   <!-- РЕЕСТР -->
   <div class="tab-panel" id="panel-registry">
+    <div id="registryApprovalSection" style="display:none;">
+      <div class="card">
+        <h2>Согласование <span class="hint">видно и доступно только админу</span></h2>
+      </div>
+      <div class="card">
+        <h2>Ожидают согласования</h2>
+        <div class="field-row">
+          <button class="btn" id="approvalSelectAllBtn">Выбрать все</button>
+          <button class="btn primary" id="approvalBulkApproveBtn">Согласовать выбранное</button>
+          <span class="note" id="approvalBulkStatus"></span>
+        </div>
+        <div class="table-wrap"><table class="dt" id="approvalTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>Заявки на оплату <span class="hint">приоритет «Низкий» — оператор может только запросить, провести платёж может только админ</span></h2>
+        <div class="table-wrap"><table class="dt" id="paymentRequestsTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>История заявок на оплату <span class="hint">последние решения</span></h2>
+        <div class="table-wrap"><table class="dt" id="paymentRequestsHistoryTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>История согласований <span class="hint">последние решения</span></h2>
+        <div class="table-wrap"><table class="dt" id="approvalHistoryTable"></table></div>
+      </div>
+    </div>
     <div class="card">
       <h2>Касса сегодня <span class="hint">сколько реально есть денег на день</span></h2>
       <div class="field-row">
@@ -246,7 +350,7 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
   </div>
 
   <!-- ИМПОРТ -->
-  <div class="tab-panel active" id="panel-import">
+  <div class="tab-panel" id="panel-import">
     <div class="card">
       <h2>Загрузка документов</h2>
       <p>Здесь — все документы для загрузки в «Дайя-Финансы». На страницах «Реестр», «Бюджет» и «Прогноз» доступна загрузка только тех данных, которые нужны там — эти же формы, просто под рукой в контексте своей страницы.</p>
@@ -382,97 +486,6 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
     </div>
   </div>
 
-  <!-- СТРУКТУРА ОБЯЗАТЕЛЬСТВ -->
-  <div class="tab-panel" id="panel-overview">
-    <div class="card">
-      <h2>Сейчас <span class="hint">открытый остаток по всем действующим обязательствам</span></h2>
-    </div>
-    <div class="kpi-row" id="overviewKpiRow"></div>
-    <div class="card">
-      <h2>Структура по типу платежа</h2>
-      <div class="table-wrap"><table class="dt" id="overviewTierTable"></table></div>
-    </div>
-    <div class="card">
-      <h2>Структура по статьям <span class="hint">клик по статье — контрагенты внутри неё</span></h2>
-      <div class="table-wrap"><table class="dt" id="overviewCategoryTable"></table></div>
-      <div id="overviewDrillBox"></div>
-    </div>
-    <div class="card">
-      <h2>Топ контрагентов по открытому остатку</h2>
-      <div class="table-wrap"><table class="dt" id="overviewCounterpartyTable"></table></div>
-    </div>
-
-    <div class="card">
-      <h2>Сравнение периодов <span class="hint">выросли обязательства или сократились — на начало периода vs на конец</span></h2>
-      <div class="field-row">
-        <label>На начало</label><input type="date" id="compareFrom">
-        <label>На конец</label><input type="date" id="compareTo">
-      </div>
-      <div class="note">Если в реестре ещё нет полной истории на эту дату — задайте известный остаток вручную:</div>
-      <div class="field-row">
-        <label>Дата</label><input type="date" id="openingDate">
-        <label>Статья</label><select id="openingCategory"><option value="">Итого (все статьи)</option></select>
-        <label>Остаток</label><input type="number" id="openingAmount" step="0.01" style="width:130px;"><span class="unit">₽</span>
-        <button class="btn" id="saveOpeningBtn">Сохранить как известный остаток</button>
-        <span class="note" id="openingStatus"></span>
-      </div>
-    </div>
-    <div class="kpi-row" id="compareKpiRow"></div>
-    <div class="card">
-      <h2>По типу платежа</h2>
-      <div class="table-wrap"><table class="dt" id="compareTierTable"></table></div>
-    </div>
-    <div class="card">
-      <h2>По статьям <span class="hint">крупнейшие изменения — сверху</span></h2>
-      <div class="table-wrap"><table class="dt" id="compareCategoryTable"></table></div>
-    </div>
-  </div>
-
-  <!-- ОЧЕРЕДЬ -->
-  <div class="tab-panel" id="panel-queue">
-    <div class="card">
-      <h2>Очередь приоритизации <span class="hint">Критичный → Важный операционный → Операционный → Низкий приоритет, внутри группы — по сроку</span></h2>
-      <div class="field-row"><label>Ближайший горизонт до даты</label><input type="date" id="queueDate"></div>
-    </div>
-    <div class="kpi-row" id="queueKpiRow"></div>
-    <div id="queueGroups"></div>
-  </div>
-
-  <!-- УТЕЧКИ -->
-  <div class="tab-panel" id="panel-leaks">
-    <div class="card">
-      <h2>Отчёт об утечках <span class="hint">платежи низкого приоритета за период</span></h2>
-      <div class="field-row">
-        <label>С</label><input type="date" id="leakFrom">
-        <label>По</label><input type="date" id="leakTo">
-        <button class="btn primary" id="leakApplyBtn">Показать</button>
-      </div>
-    </div>
-    <div class="kpi-row" id="leakKpiRow"></div>
-    <div class="card">
-      <h2>По контрагентам</h2>
-      <div class="table-wrap"><table class="dt" id="leakByCounterpartyTable"></table></div>
-    </div>
-    <div class="card">
-      <h2>По статьям</h2>
-      <div class="table-wrap"><table class="dt" id="leakByCategoryTable"></table></div>
-    </div>
-  </div>
-
-  <!-- ДИНАМИКА -->
-  <div class="tab-panel" id="panel-dynamics">
-    <div class="card">
-      <h2>По статьям <span class="hint">открытый остаток на конец периода</span></h2>
-      <div class="table-wrap"><table class="dt" id="dynamicsTable"></table></div>
-      <div class="note">Открытый остаток = сумма обязательств минус оплаты, зачтённые к этой дате. Рост — обязательства перед статьёй растут, снижение — гасятся. Отменённые обязательства в расчёт не входят.</div>
-    </div>
-    <div class="card">
-      <h2>По типу платежа <span class="hint">Критичный / Важный операционный / Операционный / Низкий приоритет</span></h2>
-      <div class="table-wrap"><table class="dt" id="dynamicsTierTable"></table></div>
-      <div class="note">В идеале «Низкий приоритет» должен стремиться к нулю, а «Критичный» — не расти бесконтрольно.</div>
-    </div>
-  </div>
-
   <!-- ПРИОРИТЕТЫ СТАТЕЙ -->
   <div class="tab-panel" id="panel-priorities">
     <div class="card">
@@ -560,50 +573,6 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
     <div class="note">Прогноз — простая линейная экстраполяция: факт на сегодня делится на число прошедших дней месяца и умножается на число дней в месяце. Это не статистическая модель и не учитывает сезонность — прозрачный ориентир, а не точный расчёт.</div>
   </div>
 
-  <!-- ИТОГИ ПЕРИОДА -->
-  <div class="tab-panel" id="panel-summary">
-    <div class="card">
-      <h2>Итоги периода <span class="hint">сколько и на что потрачено, сколько ушло в утечки</span></h2>
-      <div class="field-row">
-        <label>Период</label>
-        <select id="summaryType">
-          <option value="week">Неделя</option>
-          <option value="month">Месяц</option>
-        </select>
-        <label>Дата внутри периода</label><input type="date" id="summaryDate">
-      </div>
-    </div>
-    <div class="kpi-row" id="summaryKpiRow"></div>
-    <div class="card">
-      <h2>Расход по статьям за период</h2>
-      <div class="table-wrap"><table class="dt" id="summaryCategoryTable"></table></div>
-    </div>
-  </div>
-
-  <!-- СОГЛАСОВАНИЕ -->
-  <div class="tab-panel" id="panel-approval">
-    <div class="card">
-      <h2>Ожидают согласования <span class="hint">видно и доступно только CEO/CFO</span></h2>
-      <div class="field-row">
-        <button class="btn" id="approvalSelectAllBtn">Выбрать все</button>
-        <button class="btn primary" id="approvalBulkApproveBtn">Согласовать выбранное</button>
-        <span class="note" id="approvalBulkStatus"></span>
-      </div>
-      <div class="table-wrap"><table class="dt" id="approvalTable"></table></div>
-    </div>
-    <div class="card">
-      <h2>Заявки на оплату <span class="hint">приоритет «Низкий» — оператор может только запросить, провести платёж может только админ</span></h2>
-      <div class="table-wrap"><table class="dt" id="paymentRequestsTable"></table></div>
-    </div>
-    <div class="card">
-      <h2>История заявок на оплату <span class="hint">последние решения</span></h2>
-      <div class="table-wrap"><table class="dt" id="paymentRequestsHistoryTable"></table></div>
-    </div>
-    <div class="card">
-      <h2>История согласований <span class="hint">последние решения</span></h2>
-      <div class="table-wrap"><table class="dt" id="approvalHistoryTable"></table></div>
-    </div>
-  </div>
 </div>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -625,6 +594,12 @@ const TIERS = [
   { key:'low', label:'Низкий приоритет', hint:'не относится к основной деятельности', badgeClass:'st-good' }
 ];
 function tierInfo(key){ return TIERS.find(t=>t.key===key) || TIERS[0]; }
+// Вес тира для расчёта «эффективности использования денежных средств» — доля потраченного
+// по этому тиру, которая считается оправданной. 1 = полностью оправдано (критичный —
+// без него бизнес встанет), 0 = полностью неоправдано (низкий — не относится к делу, это
+// и есть источник данных «Отчёта об утечках»). Пока константа в коде, не в базе — нет
+// отдельного UI для правки весов.
+const TIER_EFFICIENCY_WEIGHT = { critical:1, important_operational:0.9, operational:0.7, low:0 };
 
 // Список статей — не захардкожен: живёт целиком в pay_category_priorities (категория
 // + приоритет по умолчанию), редактируется на вкладке «Приоритеты статей». categoryList
@@ -642,7 +617,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;
 
 let obligations = [];           // pay_obligations rows
 let paymentsByObligation = new Map(); // obligation_id -> [pay_payments rows]
-let currentTab = 'import';
+let currentTab = 'dashboard';
 let isAdmin = false;            // CEO/CFO — из app_metadata.role сессии, см. applyRoleFromSession()
 let isViewer = false;           // только просмотр — из той же роли
 let paymentRequests = [];       // pay_payment_requests rows
@@ -740,7 +715,7 @@ function applyRoleFromSession(session){
   const role = (session.user.app_metadata && session.user.app_metadata.role) || 'operator';
   isAdmin = role === 'admin';
   isViewer = role === 'viewer';
-  document.getElementById('approvalTabBtn').style.display = isAdmin ? '' : 'none';
+  document.getElementById('registryApprovalSection').style.display = isAdmin ? '' : 'none';
   document.body.classList.toggle('viewer-mode', isViewer);
   document.getElementById('viewerBadge').style.display = isViewer ? '' : 'none';
 }
@@ -782,16 +757,11 @@ document.getElementById('tabs').addEventListener('click', e=>{
   renderActiveTab();
 });
 function renderActiveTab(){
-  if(currentTab==='registry'){ renderRegistry(); renderCashCard(); }
-  else if(currentTab==='overview') renderOverview();
-  else if(currentTab==='queue') renderQueue();
+  if(currentTab==='dashboard') renderDashboard();
+  else if(currentTab==='registry'){ renderRegistry(); renderCashCard(); if(isAdmin) renderApproval(); }
   else if(currentTab==='budget') renderBudgetTab();
   else if(currentTab==='forecast') renderForecast();
-  else if(currentTab==='summary') renderSummary();
-  else if(currentTab==='leaks') renderLeaks();
-  else if(currentTab==='dynamics') renderDynamics();
   else if(currentTab==='priorities'){ renderPriorities(); renderIncomePriorities(); }
-  else if(currentTab==='approval') renderApproval();
 }
 
 /* ---------- add obligation ---------- */
@@ -1598,96 +1568,204 @@ document.getElementById('impIncBudConfirmBtn').addEventListener('click', async (
   await loadAll();
 });
 
-/* ---------- queue ---------- */
-document.getElementById('queueDate').addEventListener('change', renderQueue);
-function renderQueue(){
-  const dateInput = document.getElementById('queueDate');
-  if(!dateInput.value) dateInput.value = todayISO();
-  const horizon = dateInput.value;
-  const open = obligations.filter(isOpenish);
-  const withinHorizon = ob => !ob.due_date || ob.due_date <= horizon;
-  const sumRem = list => list.reduce((s,ob)=>s+remaining(ob),0);
+function kpi(label,value,sub){ return '<div class="kpi"><div class="label">'+label+'</div><div class="value">'+value+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'; }
 
-  const groups = TIERS.map(t=>{
-    const list = open.filter(ob=>ob.tier===t.key).sort(sortByDue);
-    return { tier:t, list, all: sumRem(list), horizon: sumRem(list.filter(withinHorizon)) };
-  });
-  const totalHorizon = groups.reduce((s,g)=>s+g.horizon,0);
-
-  const cashPos = todaysCashPosition() || latestCashPosition();
-  const available = cashPos ? Number(cashPos.opening_balance||0)+Number(cashPos.prior_day_inflow||0) : null;
-  const criticalGroup = groups.find(g=>g.tier.key==='critical');
-  const criticalSum = criticalGroup ? criticalGroup.all : 0;
-  const gap = available!=null ? available - criticalSum : null;
-  const availableKpi = available!=null
-    ? kpi('Доступно'+(cashPos.position_date===todayISO()?' сегодня':' (на '+fmtDate(cashPos.position_date)+')'), fmtRub(available),
-        gap!=null && gap<0 ? '<span class="badge st-critical">разрыв: не хватает '+fmtRub(-gap)+' на критичное</span>' : 'хватает на критичное')
-    : kpi('Доступно сегодня', '—', 'кассовая позиция не введена — см. «Реестр»');
-
-  document.getElementById('queueKpiRow').innerHTML =
-      availableKpi
-    + groups.map(g=> kpi(g.tier.label+' — всего открыто', fmtRub(g.all), 'из них к '+fmtDate(horizon)+': '+fmtRub(g.horizon))).join('')
-    + kpi('Нужно к '+fmtDate(horizon), fmtRub(totalHorizon));
-
-  document.getElementById('queueGroups').innerHTML = groups.map(g=>
-      '<div class="card"><h2>'+esc(g.tier.label)+' <span class="hint">'+esc(g.tier.hint)+'</span></h2>'
-    + '<div class="table-wrap"><table class="dt">'+queueTable(g.list, horizon)+'</table></div></div>'
-  ).join('');
+/* ---------- дашборд: единая точка входа, drill-down вместо вкладок ----------
+   Состояние — один объект, как и в остальных drill-боксах файла (openBudgetDrill
+   и т.п.). branch=null — корень (два больших KPI + вторичные панели). */
+let dashboardView = { branch:null, tier:null, category:null };
+let dashEffFrom = null, dashEffTo = null; // период ветки "Эффективность", по умолчанию — с 1-го числа месяца по сегодня
+function renderBreadcrumbs(containerId, items){ // items: [{label, onClick|null}] — последний уровень не кликабелен
+  const el = document.getElementById(containerId);
+  el.innerHTML = '<div class="breadcrumb">'+items.map((it,i)=>{
+    const isLast = i===items.length-1;
+    return (isLast || !it.onClick) ? esc(it.label) : '<a class="dashCrumbLink" data-idx="'+i+'">'+esc(it.label)+'</a>';
+  }).join(' <span class="crumb-sep">›</span> ')+'</div>';
+  el.querySelectorAll('.dashCrumbLink').forEach(node=> node.addEventListener('click', ()=> items[Number(node.dataset.idx)].onClick()));
 }
-function sortByDue(a,b){ if(!a.due_date) return 1; if(!b.due_date) return -1; return a.due_date < b.due_date ? -1 : a.due_date > b.due_date ? 1 : 0; }
-function queueTable(list, horizon){
-  let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Статья</th><th>Остаток</th><th>Срок</th></tr></thead><tbody>';
-  if(!list.length) h += '<tr class="empty-row"><td colspan="4">Пусто.</td></tr>';
-  list.forEach(ob=>{
-    const due = !ob.due_date || ob.due_date<=horizon;
-    h += '<tr><td class="rowlabel">'+esc(ob.counterparty)+'</td><td>'+esc(ob.category)+'</td>'
-       + '<td class="num">'+fmtRub(remaining(ob))+'</td>'
-       + '<td class="'+(due?'due-now':'')+'">'+fmtDate(ob.due_date)+'</td></tr>';
+function renderDashboard(){
+  document.getElementById('dashRootView').style.display = dashboardView.branch===null ? '' : 'none';
+  document.getElementById('dashObligationsView').style.display = dashboardView.branch==='obligations' ? '' : 'none';
+  document.getElementById('dashEfficiencyView').style.display = dashboardView.branch==='efficiency' ? '' : 'none';
+  if(dashboardView.branch===null) renderDashboardRoot();
+  else if(dashboardView.branch==='obligations') renderDashboardObligations();
+  else renderDashboardEfficiency();
+}
+function goDashboardRoot(){ dashboardView = { branch:null, tier:null, category:null }; renderDashboard(); }
+function renderDashboardRoot(){
+  const today = todayISO();
+  const totalNow = balanceAtMatch(()=>true, today);
+  if(!dashEffFrom){ const d=new Date(); d.setDate(1); dashEffFrom = d.toISOString().slice(0,10); }
+  if(!dashEffTo) dashEffTo = today;
+  const eff = efficiencyForPeriod(dashEffFrom, dashEffTo);
+  const box = document.getElementById('dashRootKpis');
+  box.innerHTML =
+      '<div class="card dash-kpi-big" id="dashObligationsKpi"><div class="label">Обязательства всего</div><div class="value">'+fmtRub(totalNow)+'</div><div class="sub">открытый остаток — нажмите для разбивки по приоритету</div></div>'
+    + '<div class="card dash-kpi-big" id="dashEfficiencyKpi"><div class="label">Эффективность использования денежных средств</div><div class="value">'+(eff.coefficient!=null?nf1.format(eff.coefficient*100)+'%':'—')+'</div><div class="sub">потери с '+fmtDate(dashEffFrom)+' по '+fmtDate(dashEffTo)+': '+fmtRub(eff.loss)+' — нажмите для анализа</div></div>';
+  document.getElementById('dashObligationsKpi').addEventListener('click', ()=>{ dashboardView={branch:'obligations',tier:null,category:null}; renderDashboard(); });
+  document.getElementById('dashEfficiencyKpi').addEventListener('click', ()=>{ dashboardView={branch:'efficiency',category:null}; renderDashboard(); });
+  renderSummary();
+  renderDynamics();
+  renderComparePeriods();
+}
+document.getElementById('dashGoToRegistryBtn').addEventListener('click', ()=>{
+  document.querySelector('.tab-btn[data-tab="registry"]').click();
+});
+function renderDashboardObligations(){
+  const today = todayISO();
+  renderBreadcrumbs('dashObligationsCrumbs', [
+    { label:'Обязательства всего', onClick: goDashboardRoot },
+    ...(dashboardView.tier ? [{ label: tierInfo(dashboardView.tier).label, onClick: ()=>{ dashboardView.category=null; renderDashboard(); } }] : []),
+    ...(dashboardView.category ? [{ label: dashboardView.category, onClick: null }] : [])
+  ]);
+  const body = document.getElementById('dashObligationsBody');
+  if(!dashboardView.tier){
+    const cashPos = todaysCashPosition() || latestCashPosition();
+    const available = cashPos ? Number(cashPos.opening_balance||0)+Number(cashPos.prior_day_inflow||0) : null;
+    const criticalSum = balanceAtMatch(ob=>ob.tier==='critical', today);
+    const gap = available!=null ? available-criticalSum : null;
+    const gapNote = available!=null
+      ? (gap!=null && gap<0 ? '<span class="badge st-critical">разрыв: не хватает '+fmtRub(-gap)+' на критичное</span>' : 'доступно '+fmtRub(available)+' — хватает на критичное')
+      : 'кассовая позиция не введена — см. «Реестр»';
+    body.innerHTML = '<div class="note" style="margin-bottom:12px;">'+gapNote+'</div><div class="kpi-row" id="dashTierCards"></div>';
+    document.getElementById('dashTierCards').innerHTML = TIERS.map(t=>{
+      const sum = balanceAtMatch(ob=>ob.tier===t.key, today);
+      return '<div class="card dash-kpi-big tierCard" data-tier="'+t.key+'"><div class="label">'+esc(t.label)+'</div><div class="value">'+fmtRub(sum)+'</div><div class="sub">'+esc(t.hint)+'</div></div>';
+    }).join('');
+    document.querySelectorAll('.tierCard').forEach(node=> node.addEventListener('click', ()=>{ dashboardView.tier=node.dataset.tier; dashboardView.category=null; renderDashboard(); }));
+  } else if(!dashboardView.category){
+    const tier = dashboardView.tier;
+    const total = balanceAtMatch(ob=>ob.tier===tier, today);
+    body.innerHTML = '<div class="card"><h2>'+esc(tierInfo(tier).label)+' <span class="hint">по статьям — клик по статье раскрывает контрагентов</span></h2></div>'
+      + '<div class="table-wrap"><table class="dt" id="dashTierCategoryTable"></table></div>';
+    renderStructureTable('dashTierCategoryTable', 'Статья', balanceByCategoryInTier(tier), total, cat=>{ dashboardView.category=cat; renderDashboard(); });
+  } else {
+    body.innerHTML = '<div class="card"><h2>«'+esc(dashboardView.category)+'», '+esc(tierInfo(dashboardView.tier).label)+' <span class="hint">контрагенты по открытому остатку</span></h2></div>'
+      + '<div class="table-wrap"><table class="dt" id="dashTierCounterpartyTable"></table></div>';
+    counterpartyStructureTable('dashTierCounterpartyTable', currentBalanceByCounterparty(dashboardView.category, dashboardView.tier));
+  }
+}
+function renderDashboardEfficiency(){
+  if(!dashEffFrom){ const d=new Date(); d.setDate(1); dashEffFrom = d.toISOString().slice(0,10); }
+  if(!dashEffTo) dashEffTo = todayISO();
+  renderBreadcrumbs('dashEfficiencyCrumbs', [
+    { label:'Эффективность использования денежных средств', onClick: goDashboardRoot },
+    ...(dashboardView.category ? [{ label: dashboardView.category, onClick:null }] : [])
+  ]);
+  const body = document.getElementById('dashEfficiencyBody');
+  if(!dashboardView.category){
+    const eff = efficiencyForPeriod(dashEffFrom, dashEffTo);
+    body.innerHTML = '<div class="card"><h2>Анализ эффективности <span class="hint">коэффициент = доля потраченного оправданно, по весу приоритета статьи</span></h2>'
+        + '<div class="field-row"><label>С</label><input type="date" id="dashEffFromInput" value="'+dashEffFrom+'"><label>По</label><input type="date" id="dashEffToInput" value="'+dashEffTo+'"></div></div>'
+      + '<div class="kpi-row">'
+        + kpi('Коэффициент эффективности', eff.coefficient!=null?nf1.format(eff.coefficient*100)+'%':'—', fmtDate(dashEffFrom)+' — '+fmtDate(dashEffTo))
+        + kpi('Потрачено всего', fmtRub(eff.totalSpend))
+        + kpi('Потрачено оправданно', fmtRub(eff.weightedSpend))
+        + kpi('Потери', fmtRub(eff.loss))
+      + '</div>'
+      + '<div class="card"><h2>По типу платежа</h2><div class="table-wrap"><table class="dt">'+tierEfficiencyTable(eff)+'</table></div></div>'
+      + '<div class="card"><h2>По статьям <span class="hint">клик по статье — сами платежи</span></h2><div class="table-wrap"><table class="dt" id="dashEffCategoryTable"></table></div></div>';
+    document.getElementById('dashEffFromInput').addEventListener('change', e=>{ dashEffFrom=e.target.value; renderDashboard(); });
+    document.getElementById('dashEffToInput').addEventListener('change', e=>{ dashEffTo=e.target.value; renderDashboard(); });
+    document.getElementById('dashEffCategoryTable').innerHTML = lossTable(lossByCategoryInRange(dashEffFrom, dashEffTo));
+    document.querySelectorAll('.dashLossCategoryLink').forEach(node=> node.addEventListener('click', ()=>{ dashboardView.category=node.dataset.category; renderDashboard(); }));
+  } else {
+    const list = paymentsInCategoryRange(dashboardView.category, dashEffFrom, dashEffTo);
+    body.innerHTML = '<div class="card"><h2>Платежи по статье «'+esc(dashboardView.category)+'» <span class="hint">'+fmtDate(dashEffFrom)+' — '+fmtDate(dashEffTo)+'</span></h2></div>'
+      + '<div class="table-wrap"><table class="dt">'+paymentsTable(list)+'</table></div>';
+  }
+}
+function tierEfficiencyTable(eff){
+  let h = '<thead><tr><th class="rowlabel">Тип платежа</th><th>Вес</th><th>Потрачено</th><th>Вклад в потери</th></tr></thead><tbody>';
+  TIERS.forEach(t=>{
+    const spend = eff.spendByTier[t.key]||0;
+    if(spend<=0.5) return;
+    const w = TIER_EFFICIENCY_WEIGHT[t.key];
+    h += '<tr><td class="rowlabel">'+esc(t.label)+'</td><td class="num">'+Math.round(w*100)+'%</td><td class="num">'+fmtRub(spend)+'</td><td class="num">'+fmtRub(spend*(1-w))+'</td></tr>';
   });
   h += '</tbody>';
   return h;
 }
-function kpi(label,value,sub){ return '<div class="kpi"><div class="label">'+label+'</div><div class="value">'+value+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'; }
 
-/* ---------- leaks ---------- */
-document.getElementById('leakApplyBtn').addEventListener('click', renderLeaks);
-function renderLeaks(){
-  const fromEl = document.getElementById('leakFrom'), toEl = document.getElementById('leakTo');
-  if(!toEl.value) toEl.value = todayISO();
-  if(!fromEl.value){ const d=new Date(); d.setDate(d.getDate()-30); fromEl.value = d.toISOString().slice(0,10); }
-  const from = fromEl.value, to = toEl.value;
+/* ---------- дашборд: обязательства (тир → статья → контрагент), см. renderDashboard ниже ---------- */
+function balanceByCategoryInTier(tier){
+  const today = todayISO();
+  return categoryList.map(c=> ({ label:c, sum: balanceAtMatch(ob=>ob.tier===tier && ob.category===c, today) }));
+}
 
-  const byCounterparty = new Map(); // counterparty -> {sum,count}
-  const byCategory = new Map();
-  let totalCount=0, totalSum=0;
+/* ---------- дашборд: эффективность использования денежных средств ----------
+   Коэффициент за период = Σ(платёж×вес тира)/Σ(платёж) — доля потраченного
+   "оправданно" (см. TIER_EFFICIENCY_WEIGHT). Потери = Σ платёж×(1−вес тира),
+   раскладываются по статьям и по самим платежам при drill-down. Заменяет
+   собой прежний отдельный «Отчёт об утечках» (был только про tier='low' —
+   теперь общий взвешенный расчёт по всем тирам, утечки — частный случай
+   веса 0). */
+function efficiencyForPeriod(from, to){
+  const spendByTier = {};
+  let totalSpend = 0, weightedSpend = 0;
   obligations.forEach(ob=>{
-    if(ob.tier!=='low') return;
+    const w = TIER_EFFICIENCY_WEIGHT[ob.tier] ?? 0.7;
     (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
       if(p.paid_at < from || p.paid_at > to) return;
-      totalCount++; totalSum += Number(p.amount||0);
-      const cKey = ob.counterparty;
-      const catKey = ob.category;
-      if(!byCounterparty.has(cKey)) byCounterparty.set(cKey,{sum:0,count:0});
-      byCounterparty.get(cKey).sum += Number(p.amount||0); byCounterparty.get(cKey).count++;
-      if(!byCategory.has(catKey)) byCategory.set(catKey,{sum:0,count:0});
-      byCategory.get(catKey).sum += Number(p.amount||0); byCategory.get(catKey).count++;
+      const amt = Number(p.amount||0);
+      totalSpend += amt; weightedSpend += amt*w;
+      spendByTier[ob.tier] = (spendByTier[ob.tier]||0) + amt;
     });
   });
-
-  document.getElementById('leakKpiRow').innerHTML =
-      kpi('Платежей низкого приоритета', String(totalCount), fmtDate(from)+' — '+fmtDate(to))
-    + kpi('На сумму', fmtRub(totalSum))
-    + kpi('Контрагентов', String(byCounterparty.size))
-    + kpi('Средний платёж', totalCount ? fmtRub(totalSum/totalCount) : '—');
-
-  document.getElementById('leakByCounterpartyTable').innerHTML = leakTable(byCounterparty, 'Контрагент');
-  document.getElementById('leakByCategoryTable').innerHTML = leakTable(byCategory, 'Статья');
+  const coefficient = totalSpend ? weightedSpend/totalSpend : null;
+  return { totalSpend, weightedSpend, loss: totalSpend-weightedSpend, coefficient, spendByTier };
 }
-function leakTable(map, label){
+function lossByCategoryInRange(from, to){
+  const byCategory = new Map(); // category -> {spend, loss, count}
+  obligations.forEach(ob=>{
+    const w = TIER_EFFICIENCY_WEIGHT[ob.tier] ?? 0.7;
+    (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
+      if(p.paid_at < from || p.paid_at > to) return;
+      const amt = Number(p.amount||0);
+      if(!byCategory.has(ob.category)) byCategory.set(ob.category, {spend:0, loss:0, count:0});
+      const g = byCategory.get(ob.category);
+      g.spend += amt; g.loss += amt*(1-w); g.count++;
+    });
+  });
+  return byCategory;
+}
+function paymentsInCategoryRange(category, from, to){
+  const list = [];
+  obligations.forEach(ob=>{
+    if(ob.category!==category) return;
+    (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
+      if(p.paid_at < from || p.paid_at > to) return;
+      list.push({ counterparty:ob.counterparty, tier:ob.tier, note:ob.note, amount:Number(p.amount||0), paid_at:p.paid_at });
+    });
+  });
+  return list.sort((a,b)=> a.paid_at<b.paid_at?1: a.paid_at>b.paid_at?-1:0);
+}
+function leakTable(map, label){ // map: label -> {sum,count} — используется в "Итоги периода" (renderSummary)
   const rows = Array.from(map.entries()).sort((a,b)=>b[1].sum-a[1].sum);
   let h = '<thead><tr><th class="rowlabel">'+label+'</th><th>Платежей</th><th>Сумма</th></tr></thead><tbody>';
-  if(!rows.length) h += '<tr class="empty-row"><td colspan="3">Нет оплат низкого приоритета за период.</td></tr>';
+  if(!rows.length) h += '<tr class="empty-row"><td colspan="3">Нет оплат за период.</td></tr>';
   rows.forEach(([key,v])=>{ h += '<tr><td class="rowlabel">'+esc(key)+'</td><td class="num">'+v.count+'</td><td class="num">'+fmtRub(v.sum)+'</td></tr>'; });
+  h += '</tbody>';
+  return h;
+}
+function lossTable(map){ // map: category -> {spend, loss, count}, из lossByCategoryInRange
+  const rows = Array.from(map.entries()).filter(([,v])=>v.loss>0.5).sort((a,b)=>b[1].loss-a[1].loss);
+  let h = '<thead><tr><th class="rowlabel">Статья</th><th>Платежей</th><th>Расход</th><th>Потери</th></tr></thead><tbody>';
+  if(!rows.length) h += '<tr class="empty-row"><td colspan="4">Потерь за период нет.</td></tr>';
+  rows.forEach(([key,v])=>{
+    h += '<tr><td class="rowlabel"><span class="clickable dashLossCategoryLink" data-category="'+esc(key)+'">'+esc(key)+'</span></td>'
+       + '<td class="num">'+v.count+'</td><td class="num">'+fmtRub(v.spend)+'</td><td class="num">'+fmtRub(v.loss)+'</td></tr>';
+  });
+  h += '</tbody>';
+  return h;
+}
+function paymentsTable(list){
+  let h = '<thead><tr><th class="rowlabel">Контрагент</th><th>Тип</th><th>Дата</th><th>Сумма</th><th>Комментарий</th></tr></thead><tbody>';
+  if(!list.length) h += '<tr class="empty-row"><td colspan="5">Платежей за период нет.</td></tr>';
+  list.forEach(p=>{
+    h += '<tr><td class="rowlabel">'+esc(p.counterparty)+'</td><td>'+esc(tierInfo(p.tier).label)+'</td>'
+       + '<td>'+fmtDate(p.paid_at)+'</td><td class="num">'+fmtRub(p.amount)+'</td><td>'+esc(p.note||'—')+'</td></tr>';
+  });
   h += '</tbody>';
   return h;
 }
@@ -1862,10 +1940,11 @@ document.getElementById('incomePrioritiesTable').addEventListener('click', async
 });
 
 /* ---------- overview: structure + period comparison ---------- */
-function currentBalanceByCounterparty(categoryFilter){
+function currentBalanceByCounterparty(categoryFilter, tierFilter){
   const map = new Map();
   obligations.forEach(ob=>{
     if(categoryFilter && ob.category!==categoryFilter) return;
+    if(tierFilter && ob.tier!==tierFilter) return;
     if(ob.status==='cancelled') return;
     const rem = remaining(ob);
     if(rem <= 0.5) return; // погашено — не в открытом остатке
@@ -1899,21 +1978,6 @@ function counterpartyTableRows(map, limit){
 function counterpartyStructureTable(elId, map, limit){
   document.getElementById(elId).innerHTML = counterpartyTableRows(map, limit);
 }
-let openOverviewCategory = null;
-function showCategoryDrilldown(category){
-  openOverviewCategory = (openOverviewCategory===category) ? null : category;
-  renderOverviewDrillBox();
-}
-function renderOverviewDrillBox(){
-  const box = document.getElementById('overviewDrillBox');
-  if(!openOverviewCategory){ box.innerHTML=''; return; }
-  box.innerHTML = '<div class="card" style="margin-top:10px;"><h2>Контрагенты по статье «'+esc(openOverviewCategory)+'»</h2>'
-    + '<div class="table-wrap"><table class="dt">'+counterpartyTableRows(currentBalanceByCounterparty(openOverviewCategory))+'</table></div>'
-    + '<button class="btn small" id="closeOverviewDrillBtn">Закрыть</button></div>';
-}
-document.getElementById('overviewDrillBox').addEventListener('click', e=>{
-  if(e.target.closest('#closeOverviewDrillBtn')){ openOverviewCategory=null; renderOverviewDrillBox(); }
-});
 function compareTable(elId, rowLabelHeader, rows){ // rows: [{label, from, to}], уже отсортированы вызывающим кодом
   let h = '<thead><tr><th class="rowlabel">'+esc(rowLabelHeader)+'</th><th>Было</th><th>Стало</th><th>Изменение</th></tr></thead><tbody>';
   if(!rows.length) h += '<tr class="empty-row"><td colspan="4">Нет данных за период.</td></tr>';
@@ -1933,18 +1997,8 @@ function compareTable(elId, rowLabelHeader, rows){ // rows: [{label, from, to}],
   h += '</tbody>';
   document.getElementById(elId).innerHTML = h;
 }
-function renderOverview(){
+function renderComparePeriods(){
   const today = todayISO();
-  const totalNow = balanceAtMatch(()=>true, today);
-  document.getElementById('overviewKpiRow').innerHTML =
-      kpi('Всего открыто сейчас', fmtRub(totalNow))
-    + TIERS.map(t=> kpi(t.label, fmtRub(balanceAtMatch(ob=>ob.tier===t.key, today)))).join('');
-
-  renderStructureTable('overviewTierTable', 'Тип платежа', TIERS.map(t=>({ label:t.label, sum: balanceAtMatch(ob=>ob.tier===t.key, today) })), totalNow);
-  renderStructureTable('overviewCategoryTable', 'Статья', categoryList.map(c=>({ label:c, sum: balanceAtMatch(ob=>ob.category===c, today) })), totalNow, showCategoryDrilldown);
-  counterpartyStructureTable('overviewCounterpartyTable', currentBalanceByCounterparty(), 10);
-  renderOverviewDrillBox();
-
   const fromEl = document.getElementById('compareFrom'), toEl = document.getElementById('compareTo');
   if(!toEl.value) toEl.value = today;
   if(!fromEl.value){ const d=new Date(); d.setDate(1); fromEl.value = d.toISOString().slice(0,10); }
@@ -1967,8 +2021,8 @@ function renderOverview(){
 
   if(!document.getElementById('openingDate').value) document.getElementById('openingDate').value = from;
 }
-document.getElementById('compareFrom').addEventListener('change', renderOverview);
-document.getElementById('compareTo').addEventListener('change', renderOverview);
+document.getElementById('compareFrom').addEventListener('change', renderComparePeriods);
+document.getElementById('compareTo').addEventListener('change', renderComparePeriods);
 document.getElementById('saveOpeningBtn').addEventListener('click', async ()=>{
   const statusEl = document.getElementById('openingStatus');
   const as_of_date = document.getElementById('openingDate').value;
@@ -2586,7 +2640,6 @@ sb.auth.onAuthStateChange(async (event, session)=>{
     authScreen.style.display='none'; appRoot.style.display='block';
     document.getElementById('userEmail').textContent = emailToLogin(session.user.email);
     applyRoleFromSession(session); // синхронно, роль уже в сессии — без похода в базу
-    document.getElementById('queueDate').value = todayISO();
     document.getElementById('summaryDate').value = todayISO();
     await loadAll(); // подгружает categoryList/categoryPriority из базы
     populateSelects(); // список статей теперь известен — заполняем выпадающие списки
