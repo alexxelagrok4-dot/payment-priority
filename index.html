@@ -105,7 +105,8 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline
 .dash-kpi-big .value{font-family:var(--font-mono);font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
 .dash-kpi-big .sub{font-size:12.5px;color:var(--ink-2);margin-top:6px;}
 .tierCard{margin-bottom:16px;}
-.breadcrumb{font-size:13px;color:var(--ink-2);margin-bottom:14px;}
+.dash-nav-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.breadcrumb{font-size:13px;color:var(--ink-2);}
 .breadcrumb a{color:var(--accent);cursor:pointer;text-decoration:none;}
 .breadcrumb a:hover{text-decoration:underline;}
 .crumb-sep{color:var(--ink-muted);}
@@ -1575,13 +1576,28 @@ function kpi(label,value,sub){ return '<div class="kpi"><div class="label">'+lab
    и т.п.). branch=null — корень (два больших KPI + вторичные панели). */
 let dashboardView = { branch:null, tier:null, category:null };
 let dashEffFrom = null, dashEffTo = null; // период ветки "Эффективность", по умолчанию — с 1-го числа месяца по сегодня
-function renderBreadcrumbs(containerId, items){ // items: [{label, onClick|null}] — последний уровень не кликабелен
+function renderBreadcrumbs(containerId, items, onBack){ // items: [{label, onClick|null}] — последний уровень не кликабелен; onBack — на один уровень назад
   const el = document.getElementById(containerId);
-  el.innerHTML = '<div class="breadcrumb">'+items.map((it,i)=>{
+  const crumbsHtml = items.map((it,i)=>{
     const isLast = i===items.length-1;
     return (isLast || !it.onClick) ? esc(it.label) : '<a class="dashCrumbLink" data-idx="'+i+'">'+esc(it.label)+'</a>';
-  }).join(' <span class="crumb-sep">›</span> ')+'</div>';
+  }).join(' <span class="crumb-sep">›</span> ');
+  el.innerHTML = '<div class="dash-nav-row">'
+    + (onBack ? '<button class="btn small dashBackBtn">‹ Назад</button>' : '')
+    + '<div class="breadcrumb">'+crumbsHtml+'</div></div>';
+  if(onBack) el.querySelector('.dashBackBtn').addEventListener('click', onBack);
   el.querySelectorAll('.dashCrumbLink').forEach(node=> node.addEventListener('click', ()=> items[Number(node.dataset.idx)].onClick()));
+}
+function goDashboardBack(){
+  if(dashboardView.branch==='obligations'){
+    if(dashboardView.category) dashboardView.category = null;
+    else if(dashboardView.tier) dashboardView.tier = null;
+    else dashboardView.branch = null;
+  } else if(dashboardView.branch==='efficiency'){
+    if(dashboardView.category) dashboardView.category = null;
+    else dashboardView.branch = null;
+  }
+  renderDashboard();
 }
 function renderDashboard(){
   document.getElementById('dashRootView').style.display = dashboardView.branch===null ? '' : 'none';
@@ -1614,10 +1630,11 @@ document.getElementById('dashGoToRegistryBtn').addEventListener('click', ()=>{
 function renderDashboardObligations(){
   const today = todayISO();
   renderBreadcrumbs('dashObligationsCrumbs', [
-    { label:'Обязательства всего', onClick: goDashboardRoot },
-    ...(dashboardView.tier ? [{ label: tierInfo(dashboardView.tier).label, onClick: ()=>{ dashboardView.category=null; renderDashboard(); } }] : []),
+    { label:'Дашборд', onClick: goDashboardRoot },
+    { label:'Обязательства всего', onClick: dashboardView.tier ? ()=>{ dashboardView.tier=null; dashboardView.category=null; renderDashboard(); } : null },
+    ...(dashboardView.tier ? [{ label: tierInfo(dashboardView.tier).label, onClick: dashboardView.category ? ()=>{ dashboardView.category=null; renderDashboard(); } : null }] : []),
     ...(dashboardView.category ? [{ label: dashboardView.category, onClick: null }] : [])
-  ]);
+  ], goDashboardBack);
   const body = document.getElementById('dashObligationsBody');
   if(!dashboardView.tier){
     const cashPos = todaysCashPosition() || latestCashPosition();
@@ -1649,9 +1666,10 @@ function renderDashboardEfficiency(){
   if(!dashEffFrom){ const d=new Date(); d.setDate(1); dashEffFrom = d.toISOString().slice(0,10); }
   if(!dashEffTo) dashEffTo = todayISO();
   renderBreadcrumbs('dashEfficiencyCrumbs', [
-    { label:'Эффективность использования денежных средств', onClick: goDashboardRoot },
+    { label:'Дашборд', onClick: goDashboardRoot },
+    { label:'Эффективность использования денежных средств', onClick: dashboardView.category ? ()=>{ dashboardView.category=null; renderDashboard(); } : null },
     ...(dashboardView.category ? [{ label: dashboardView.category, onClick:null }] : [])
-  ]);
+  ], goDashboardBack);
   const body = document.getElementById('dashEfficiencyBody');
   if(!dashboardView.category){
     const eff = efficiencyForPeriod(dashEffFrom, dashEffTo);
