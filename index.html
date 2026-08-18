@@ -110,6 +110,9 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline
 .breadcrumb a{color:var(--accent);cursor:pointer;text-decoration:none;}
 .breadcrumb a:hover{text-decoration:underline;}
 .crumb-sep{color:var(--ink-muted);}
+.dash-gap-banner{background:color-mix(in srgb, var(--critical) 12%, var(--surface));border:1px solid var(--critical);border-radius:var(--radius);padding:11px 15px;margin-bottom:16px;cursor:pointer;font-size:13.5px;}
+.dash-gap-banner:hover{border-color:var(--critical);box-shadow:0 0 0 1px var(--critical);}
+#dashFreshness{margin-top:16px;font-size:12px;}
 
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap;}
 .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
@@ -190,25 +193,10 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
   <!-- ДАШБОРД -->
   <div class="tab-panel active" id="panel-dashboard">
     <div id="dashRootView">
+      <div id="dashGapBannerBox"></div>
       <div class="kpi-row dash-kpi-row" id="dashRootKpis"></div>
       <div class="field-row"><button class="btn primary" id="dashGoToRegistryBtn">Перейти к реестру платежей</button></div>
-
-      <div class="card">
-        <h2>Итоги периода <span class="hint">сколько и на что потрачено, сколько ушло в утечки</span></h2>
-        <div class="field-row">
-          <label>Период</label>
-          <select id="summaryType">
-            <option value="week">Неделя</option>
-            <option value="month">Месяц</option>
-          </select>
-          <label>Дата внутри периода</label><input type="date" id="summaryDate">
-        </div>
-      </div>
-      <div class="kpi-row" id="summaryKpiRow"></div>
-      <div class="card">
-        <h2>Расход по статьям за период</h2>
-        <div class="table-wrap"><table class="dt" id="summaryCategoryTable"></table></div>
-      </div>
+      <div class="note" id="dashFreshness"></div>
 
       <div class="card">
         <h2>Динамика по статьям <span class="hint">открытый остаток на конец периода, 6 месяцев</span></h2>
@@ -503,6 +491,11 @@ body.viewer-mode .renameIncomeCategoryBtn, body.viewer-mode .deleteIncomeCategor
       <div class="table-wrap"><table class="dt" id="prioritiesTable"></table></div>
       <div class="note">Приоритет меняется здесь один раз для всей статьи — дальше при добавлении обязательства тип подставляется сам (для конкретного платежа его всё равно можно поменять вручную в форме ввода). Удаление статьи убирает её только из списка для новых обязательств — уже созданные обязательства с этой статьёй остаются как есть.</div>
     </div>
+    <div class="card">
+      <h2>Веса приоритетов для «Эффективности» <span class="hint">доля потраченного по этому приоритету, которая считается оправданной — влияет на коэффициент и потери на дашборде</span></h2>
+      <div class="field-row" id="tierWeightsRow"></div>
+      <div class="field-row" style="margin-top:10px;"><button class="btn primary" id="saveTierWeightsBtn">Сохранить</button><span class="note" id="tierWeightsStatus"></span></div>
+    </div>
 
     <div class="card">
       <h2>Новая статья дохода</h2>
@@ -600,7 +593,8 @@ function tierInfo(key){ return TIERS.find(t=>t.key===key) || TIERS[0]; }
 // без него бизнес встанет), 0 = полностью неоправдано (низкий — не относится к делу, это
 // и есть источник данных «Отчёта об утечках»). Пока константа в коде, не в базе — нет
 // отдельного UI для правки весов.
-const TIER_EFFICIENCY_WEIGHT = { critical:1, important_operational:0.9, operational:0.7, low:0 };
+const TIER_EFFICIENCY_WEIGHT = { critical:1, important_operational:0.9, operational:0.7, low:0 }; // запасной дефолт
+let tierWeights = { ...TIER_EFFICIENCY_WEIGHT }; // рабочие значения — из pay_tier_settings (loadAll), редактируются на «Приоритеты статей»
 
 // Список статей — не захардкожен: живёт целиком в pay_category_priorities (категория
 // + приоритет по умолчанию), редактируется на вкладке «Приоритеты статей». categoryList
@@ -617,6 +611,7 @@ function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); retu
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 let obligations = [];           // pay_obligations rows
+let payments = [];               // pay_payments rows, плоский список (для индикатора свежести и т.п.)
 let paymentsByObligation = new Map(); // obligation_id -> [pay_payments rows]
 let currentTab = 'dashboard';
 let isAdmin = false;            // CEO/CFO — из app_metadata.role сессии, см. applyRoleFromSession()
@@ -663,8 +658,9 @@ async function loadAll(){
   const { data: obData } = await sb.from('pay_obligations').select('*').order('due_date',{ascending:true, nullsFirst:false});
   obligations = obData||[];
   const { data: payData } = await sb.from('pay_payments').select('*').order('paid_at',{ascending:true});
+  payments = payData||[];
   paymentsByObligation = new Map();
-  (payData||[]).forEach(p=>{ if(!paymentsByObligation.has(p.obligation_id)) paymentsByObligation.set(p.obligation_id, []); paymentsByObligation.get(p.obligation_id).push(p); });
+  payments.forEach(p=>{ if(!paymentsByObligation.has(p.obligation_id)) paymentsByObligation.set(p.obligation_id, []); paymentsByObligation.get(p.obligation_id).push(p); });
   const { data: prqData } = await sb.from('pay_payment_requests').select('*').order('requested_at',{ascending:false});
   paymentRequests = prqData||[];
   pendingPaymentRequestByObligation = new Map(
@@ -673,6 +669,9 @@ async function loadAll(){
   const { data: prData } = await sb.from('pay_category_priorities').select('*').order('category',{ascending:true});
   categoryList = (prData||[]).map(r=>r.category);
   categoryPriority = new Map((prData||[]).map(r=>[r.category, r.tier]));
+  const { data: tierSettingsData } = await sb.from('pay_tier_settings').select('*');
+  tierWeights = { ...TIER_EFFICIENCY_WEIGHT };
+  (tierSettingsData||[]).forEach(r=> tierWeights[r.tier] = Number(r.efficiency_weight));
   const { data: openingData } = await sb.from('pay_opening_balances').select('*');
   openingBalances = openingData||[];
   const { data: cashData } = await sb.from('pay_cash_positions').select('*').order('position_date',{ascending:false});
@@ -762,7 +761,7 @@ function renderActiveTab(){
   else if(currentTab==='registry'){ renderRegistry(); renderCashCard(); if(isAdmin) renderApproval(); }
   else if(currentTab==='budget') renderBudgetTab();
   else if(currentTab==='forecast') renderForecast();
-  else if(currentTab==='priorities'){ renderPriorities(); renderIncomePriorities(); }
+  else if(currentTab==='priorities'){ renderPriorities(); renderTierWeights(); renderIncomePriorities(); }
 }
 
 /* ---------- add obligation ---------- */
@@ -1608,19 +1607,58 @@ function renderDashboard(){
   else renderDashboardEfficiency();
 }
 function goDashboardRoot(){ dashboardView = { branch:null, tier:null, category:null }; renderDashboard(); }
+// Свежесть данных — не "когда был последний импорт", а когда данные последний раз
+// реально менялись (ручной ввод тоже считается — честнее для оценки актуальности).
+function latestOf(list, ...fields){
+  let max = null;
+  list.forEach(r=> fields.forEach(f=>{ if(r[f] && (!max || r[f]>max)) max = r[f]; }));
+  return max;
+}
+function relativeFreshness(iso){
+  if(!iso) return 'нет данных';
+  const days = Math.floor((Date.now() - new Date(iso).getTime())/86400000);
+  if(days<=0) return 'сегодня';
+  if(days===1) return 'вчера';
+  return days+' дн. назад';
+}
+function renderDataFreshness(){
+  const items = [
+    ['обязательства', latestOf(obligations,'created_at','updated_at')],
+    ['касса', latestOf(cashPositions,'created_at')],
+    ['бюджет', latestOf(budgetLines,'created_at','updated_at')],
+    ['поступления', latestOf(receipts,'created_at')]
+  ];
+  document.getElementById('dashFreshness').textContent = 'Обновлено: '+items.map(([label,iso])=> label+' — '+relativeFreshness(iso)).join(' · ');
+}
+function cashGapInfo(){ // доступно сегодня vs сумма критичных обязательств — общий расчёт для баннера на дашборде и для ветки "Обязательства"
+  const today = todayISO();
+  const cashPos = todaysCashPosition() || latestCashPosition();
+  const available = cashPos ? Number(cashPos.opening_balance||0)+Number(cashPos.prior_day_inflow||0) : null;
+  const criticalSum = balanceAtMatch(ob=>ob.tier==='critical', today);
+  const gap = available!=null ? available-criticalSum : null;
+  return { available, criticalSum, gap };
+}
 function renderDashboardRoot(){
   const today = todayISO();
   const totalNow = balanceAtMatch(()=>true, today);
   if(!dashEffFrom){ const d=new Date(); d.setDate(1); dashEffFrom = d.toISOString().slice(0,10); }
   if(!dashEffTo) dashEffTo = today;
   const eff = efficiencyForPeriod(dashEffFrom, dashEffTo);
+  const { gap } = cashGapInfo();
+  const bannerBox = document.getElementById('dashGapBannerBox');
+  if(gap!=null && gap<0){
+    bannerBox.innerHTML = '<div class="note dash-gap-banner clickable" id="dashGapBanner"><span class="badge st-critical">Разрыв</span> не хватает '+fmtRub(-gap)+' на критичные обязательства — нажмите для разбивки по приоритету</div>';
+    document.getElementById('dashGapBanner').addEventListener('click', ()=>{ dashboardView={branch:'obligations',tier:null,category:null}; renderDashboard(); });
+  } else {
+    bannerBox.innerHTML = '';
+  }
   const box = document.getElementById('dashRootKpis');
   box.innerHTML =
       '<div class="card dash-kpi-big" id="dashObligationsKpi"><div class="label">Обязательства всего</div><div class="value">'+fmtRub(totalNow)+'</div><div class="sub">открытый остаток — нажмите для разбивки по приоритету</div></div>'
     + '<div class="card dash-kpi-big" id="dashEfficiencyKpi"><div class="label">Эффективность использования денежных средств</div><div class="value">'+(eff.coefficient!=null?nf1.format(eff.coefficient*100)+'%':'—')+'</div><div class="sub">потери с '+fmtDate(dashEffFrom)+' по '+fmtDate(dashEffTo)+': '+fmtRub(eff.loss)+' — нажмите для анализа</div></div>';
   document.getElementById('dashObligationsKpi').addEventListener('click', ()=>{ dashboardView={branch:'obligations',tier:null,category:null}; renderDashboard(); });
   document.getElementById('dashEfficiencyKpi').addEventListener('click', ()=>{ dashboardView={branch:'efficiency',category:null}; renderDashboard(); });
-  renderSummary();
+  renderDataFreshness();
   renderDynamics();
   renderComparePeriods();
 }
@@ -1637,10 +1675,7 @@ function renderDashboardObligations(){
   ], goDashboardBack);
   const body = document.getElementById('dashObligationsBody');
   if(!dashboardView.tier){
-    const cashPos = todaysCashPosition() || latestCashPosition();
-    const available = cashPos ? Number(cashPos.opening_balance||0)+Number(cashPos.prior_day_inflow||0) : null;
-    const criticalSum = balanceAtMatch(ob=>ob.tier==='critical', today);
-    const gap = available!=null ? available-criticalSum : null;
+    const { available, gap } = cashGapInfo();
     const gapNote = available!=null
       ? (gap!=null && gap<0 ? '<span class="badge st-critical">разрыв: не хватает '+fmtRub(-gap)+' на критичное</span>' : 'доступно '+fmtRub(available)+' — хватает на критичное')
       : 'кассовая позиция не введена — см. «Реестр»';
@@ -1662,6 +1697,21 @@ function renderDashboardObligations(){
     counterpartyStructureTable('dashTierCounterpartyTable', currentBalanceByCounterparty(dashboardView.category, dashboardView.tier));
   }
 }
+function setDashEffPreset(preset){
+  const today = new Date();
+  if(preset==='week'){
+    const dow = (today.getDay()+6)%7; // понедельник = 0
+    const start = new Date(today); start.setDate(today.getDate()-dow);
+    dashEffFrom = start.toISOString().slice(0,10); dashEffTo = todayISO();
+  } else if(preset==='month'){
+    dashEffFrom = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0,10);
+    dashEffTo = todayISO();
+  } else if(preset==='lastMonth'){
+    dashEffFrom = new Date(today.getFullYear(), today.getMonth()-1, 1).toISOString().slice(0,10);
+    dashEffTo = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().slice(0,10);
+  }
+  renderDashboard();
+}
 function renderDashboardEfficiency(){
   if(!dashEffFrom){ const d=new Date(); d.setDate(1); dashEffFrom = d.toISOString().slice(0,10); }
   if(!dashEffTo) dashEffTo = todayISO();
@@ -1674,7 +1724,10 @@ function renderDashboardEfficiency(){
   if(!dashboardView.category){
     const eff = efficiencyForPeriod(dashEffFrom, dashEffTo);
     body.innerHTML = '<div class="card"><h2>Анализ эффективности <span class="hint">коэффициент = доля потраченного оправданно, по весу приоритета статьи</span></h2>'
-        + '<div class="field-row"><label>С</label><input type="date" id="dashEffFromInput" value="'+dashEffFrom+'"><label>По</label><input type="date" id="dashEffToInput" value="'+dashEffTo+'"></div></div>'
+        + '<div class="field-row"><label>С</label><input type="date" id="dashEffFromInput" value="'+dashEffFrom+'"><label>По</label><input type="date" id="dashEffToInput" value="'+dashEffTo+'">'
+        + '<button class="btn small" id="dashEffPresetWeek">Эта неделя</button>'
+        + '<button class="btn small" id="dashEffPresetMonth">Этот месяц</button>'
+        + '<button class="btn small" id="dashEffPresetLastMonth">Прошлый месяц</button></div></div>'
       + '<div class="kpi-row">'
         + kpi('Коэффициент эффективности', eff.coefficient!=null?nf1.format(eff.coefficient*100)+'%':'—', fmtDate(dashEffFrom)+' — '+fmtDate(dashEffTo))
         + kpi('Потрачено всего', fmtRub(eff.totalSpend))
@@ -1685,6 +1738,9 @@ function renderDashboardEfficiency(){
       + '<div class="card"><h2>По статьям <span class="hint">клик по статье — сами платежи</span></h2><div class="table-wrap"><table class="dt" id="dashEffCategoryTable"></table></div></div>';
     document.getElementById('dashEffFromInput').addEventListener('change', e=>{ dashEffFrom=e.target.value; renderDashboard(); });
     document.getElementById('dashEffToInput').addEventListener('change', e=>{ dashEffTo=e.target.value; renderDashboard(); });
+    document.getElementById('dashEffPresetWeek').addEventListener('click', ()=> setDashEffPreset('week'));
+    document.getElementById('dashEffPresetMonth').addEventListener('click', ()=> setDashEffPreset('month'));
+    document.getElementById('dashEffPresetLastMonth').addEventListener('click', ()=> setDashEffPreset('lastMonth'));
     document.getElementById('dashEffCategoryTable').innerHTML = lossTable(lossByCategoryInRange(dashEffFrom, dashEffTo));
     document.querySelectorAll('.dashLossCategoryLink').forEach(node=> node.addEventListener('click', ()=>{ dashboardView.category=node.dataset.category; renderDashboard(); }));
   } else {
@@ -1698,7 +1754,7 @@ function tierEfficiencyTable(eff){
   TIERS.forEach(t=>{
     const spend = eff.spendByTier[t.key]||0;
     if(spend<=0.5) return;
-    const w = TIER_EFFICIENCY_WEIGHT[t.key];
+    const w = tierWeights[t.key];
     h += '<tr><td class="rowlabel">'+esc(t.label)+'</td><td class="num">'+Math.round(w*100)+'%</td><td class="num">'+fmtRub(spend)+'</td><td class="num">'+fmtRub(spend*(1-w))+'</td></tr>';
   });
   h += '</tbody>';
@@ -1722,7 +1778,7 @@ function efficiencyForPeriod(from, to){
   const spendByTier = {};
   let totalSpend = 0, weightedSpend = 0;
   obligations.forEach(ob=>{
-    const w = TIER_EFFICIENCY_WEIGHT[ob.tier] ?? 0.7;
+    const w = tierWeights[ob.tier] ?? 0.7;
     (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
       if(p.paid_at < from || p.paid_at > to) return;
       const amt = Number(p.amount||0);
@@ -1736,7 +1792,7 @@ function efficiencyForPeriod(from, to){
 function lossByCategoryInRange(from, to){
   const byCategory = new Map(); // category -> {spend, loss, count}
   obligations.forEach(ob=>{
-    const w = TIER_EFFICIENCY_WEIGHT[ob.tier] ?? 0.7;
+    const w = tierWeights[ob.tier] ?? 0.7;
     (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
       if(p.paid_at < from || p.paid_at > to) return;
       const amt = Number(p.amount||0);
@@ -1757,14 +1813,6 @@ function paymentsInCategoryRange(category, from, to){
     });
   });
   return list.sort((a,b)=> a.paid_at<b.paid_at?1: a.paid_at>b.paid_at?-1:0);
-}
-function leakTable(map, label){ // map: label -> {sum,count} — используется в "Итоги периода" (renderSummary)
-  const rows = Array.from(map.entries()).sort((a,b)=>b[1].sum-a[1].sum);
-  let h = '<thead><tr><th class="rowlabel">'+label+'</th><th>Платежей</th><th>Сумма</th></tr></thead><tbody>';
-  if(!rows.length) h += '<tr class="empty-row"><td colspan="3">Нет оплат за период.</td></tr>';
-  rows.forEach(([key,v])=>{ h += '<tr><td class="rowlabel">'+esc(key)+'</td><td class="num">'+v.count+'</td><td class="num">'+fmtRub(v.sum)+'</td></tr>'; });
-  h += '</tbody>';
-  return h;
 }
 function lossTable(map){ // map: category -> {spend, loss, count}, из lossByCategoryInRange
   const rows = Array.from(map.entries()).filter(([,v])=>v.loss>0.5).sort((a,b)=>b[1].loss-a[1].loss);
@@ -1864,6 +1912,27 @@ function renderPriorities(){
   h += '</tbody>';
   el.innerHTML = h;
 }
+function renderTierWeights(){
+  document.getElementById('tierWeightsRow').innerHTML = TIERS.map(t=>
+    '<label>'+esc(t.label)+'</label><input type="number" class="tierWeightInput" data-tier="'+t.key+'" min="0" max="100" step="1" style="width:70px;" value="'+Math.round((tierWeights[t.key]??0)*100)+'"><span class="unit">%</span>'
+  ).join('');
+}
+document.getElementById('saveTierWeightsBtn').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('tierWeightsStatus');
+  const { data:{ session } } = await sb.auth.getSession();
+  // update, не upsert — все 4 строки уже посеяны миграцией, вставка через интерфейс не предусмотрена (см. RLS)
+  let error = null;
+  for(const input of document.querySelectorAll('.tierWeightInput')){
+    const pct = Number(input.value);
+    const efficiency_weight = isFinite(pct) ? Math.min(100,Math.max(0,pct))/100 : 0;
+    const { error: err } = await sb.from('pay_tier_settings')
+      .update({ efficiency_weight, updated_by: session.user.id, updated_by_email: session.user.email })
+      .eq('tier', input.dataset.tier);
+    if(err) error = err;
+  }
+  statusEl.textContent = error ? 'Ошибка: '+error.message : 'Сохранено.';
+  await loadAll();
+});
 document.getElementById('addCategoryBtn').addEventListener('click', async ()=>{
   const statusEl = document.getElementById('addCategoryStatus');
   const name = document.getElementById('newCategoryName').value.trim();
@@ -2463,47 +2532,6 @@ function renderForecast(){
   renderForecastCategoryTable('forecastExpenseTable', categoryList, budgetLines, false, startISO, factEndISO, daysElapsed, daysInMonth, startISO);
 }
 
-/* ---------- period summary ---------- */
-function periodBounds(type, refISO){
-  const d = new Date(refISO+'T00:00:00');
-  if(type==='month'){
-    const start = new Date(d.getFullYear(), d.getMonth(), 1);
-    const end = new Date(d.getFullYear(), d.getMonth()+1, 0);
-    return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
-  }
-  const dow = (d.getDay()+6)%7; // понедельник = 0
-  const start = new Date(d); start.setDate(d.getDate()-dow);
-  const end = new Date(start); end.setDate(start.getDate()+6);
-  return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
-}
-document.getElementById('summaryType').addEventListener('change', renderSummary);
-document.getElementById('summaryDate').addEventListener('change', renderSummary);
-function renderSummary(){
-  const typeEl = document.getElementById('summaryType'), dateEl = document.getElementById('summaryDate');
-  if(!dateEl.value) dateEl.value = todayISO();
-  const { start, end } = periodBounds(typeEl.value, dateEl.value);
-
-  const byTier = {};
-  const byCategory = new Map();
-  let total = 0;
-  obligations.forEach(ob=>{
-    (paymentsByObligation.get(ob.id)||[]).forEach(p=>{
-      if(p.paid_at < start || p.paid_at > end) return;
-      const amt = Number(p.amount||0);
-      total += amt;
-      byTier[ob.tier] = (byTier[ob.tier]||0) + amt;
-      if(!byCategory.has(ob.category)) byCategory.set(ob.category, {sum:0,count:0});
-      byCategory.get(ob.category).sum += amt; byCategory.get(ob.category).count++;
-    });
-  });
-
-  document.getElementById('summaryKpiRow').innerHTML =
-      kpi('Период', fmtDate(start)+' — '+fmtDate(end), 'итого оплачено: '+fmtRub(total))
-    + TIERS.map(t=> kpi(t.label, fmtRub(byTier[t.key]||0))).join('');
-
-  document.getElementById('summaryCategoryTable').innerHTML = leakTable(byCategory, 'Статья');
-}
-
 /* ---------- approval (CEO/CFO) ---------- */
 function renderApproval(){
   const pending = obligations.filter(ob=>ob.approval_status==='pending' || !ob.approval_status).sort((a,b)=> a.created_at < b.created_at ? -1 : 1);
@@ -2658,7 +2686,6 @@ sb.auth.onAuthStateChange(async (event, session)=>{
     authScreen.style.display='none'; appRoot.style.display='block';
     document.getElementById('userEmail').textContent = emailToLogin(session.user.email);
     applyRoleFromSession(session); // синхронно, роль уже в сессии — без похода в базу
-    document.getElementById('summaryDate').value = todayISO();
     await loadAll(); // подгружает categoryList/categoryPriority из базы
     populateSelects(); // список статей теперь известен — заполняем выпадающие списки
   } else {
